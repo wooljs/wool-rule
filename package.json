@@ -1,0 +1,19 @@
+{
+  "name": "wool-rule",
+  "version": "0.0.1",
+  "description": "Lib for Rules in Wool",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test/**/*.spec.js |tap-summary --no-progress"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicocube/wool-rule.git"
+  },
+  "author": "Nicolas Lochet",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/nicocube/wool-rule/issues"
+  },
+  "homepage": "https://github.com/nicocube/wool-rule#readme"
+}
