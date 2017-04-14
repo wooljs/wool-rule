@@ -9,14 +9,17 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-'use strict'
+/**
+ * 
+ * This file is a model of Rule file format
+ * 
+ */
 
-var test = require('tape')
-  , Store = require(__dirname + '/../index.js')
+exports = module.exports = []
 
-test('', function(t) {
-  t.deepEqual(actual, expected)
-
-  t.plan(7)
-  t.end()
+exports.push({
+  n: "",
+  o: function(param, state) {
+    
+  }
 })
