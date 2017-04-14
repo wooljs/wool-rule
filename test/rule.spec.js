@@ -12,7 +12,7 @@
 'use strict'
 
 var test = require('tape')
-  , Store = require(__dirname + '/../index.js')
+  , Rule = require(__dirname + '/../index.js')
 
 test('', function(t) {
   t.deepEqual(actual, expected)

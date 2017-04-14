@@ -12,5 +12,14 @@
 module.exports = (function() {
   'use strict'
   
+  var Store = require('wool-state')
 
+  function Rule() {
+    if (! (this instanceof Rule)) return new Rule()
+    this._ = {}
+  }
+  Rule.prototype.set = function(id, value) {
+    
+  }  
+  return Rule
 }())
