@@ -9,17 +9,15 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-module.exports = (function() {
+module.exports = (function() {
   'use strict'
-  
-  var Store = require('wool-state')
-
-  function Rule() {
-    if (! (this instanceof Rule)) return new Rule()
-    this._ = {}
+  function Rule(r, s) {
+    if (! (this instanceof Rule)) return new Rule(r, s)
+    this.rules = r.reduce(function(p, c) { p[c.n] = c ; return p }, {})
+    this.store = s
   }
-  Rule.prototype.set = function(id, value) {
-    
-  }  
+  Rule.prototype.push = function(cmd) {
+    this.rules[cmd.n].o(cmd.p, this.store)
+  }
   return Rule
 }())

@@ -10,9 +10,9 @@
  */
 
 /**
- * 
+ *
  * This file is a model of Rule file format
- * 
+ *
  */
 
 exports = module.exports = []
