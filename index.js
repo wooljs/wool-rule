@@ -13,11 +13,13 @@ module.exports = (function() {
   'use strict'
   function Rule(r, s) {
     if (! (this instanceof Rule)) return new Rule(r, s)
-    this.rules = r.reduce(function(p, c) { p[c.n] = c ; return p }, {})
+    this.rules = r.reduce(function(p, c) { p[c.n] = c ; c.o.bind(this) ; return p }.bind(this), {})
     this.store = s
   }
-  Rule.prototype.push = function(cmd) {
-    this.rules[cmd.n].o(cmd.p, this.store)
+  Rule.prototype.push = function(cmd, cb) {
+    this.rules[cmd.n].o(cmd.p, function(err, ids) {
+      
+    })
   }
   return Rule
 }())

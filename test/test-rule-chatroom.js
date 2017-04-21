@@ -11,7 +11,7 @@
 
 /**
  *
- * This file is a model of Rule file format
+ * This file is a model of Rule file
  *
  */
 
@@ -19,44 +19,54 @@ exports = module.exports = []
 
 exports.push({
   n: 'create_chatroom',
-  o: function(param, store) {
+  o: function(param, cb) {
     var userId = param.userId
-      , userCallback = param.userCallback
-      , chatId = store.newId()
-    store.set(chatId, { members: [ userId ], messages: [ '* Chatroom created by '+userId ] })
-    store.sub(chatId, userId, userCallback, true)
+    try {
+      this.create({ members: [ userId ], messages: [ '* Chatroom created by '+userId ] }, cb)
+    } catch(e) {
+      cb(e)
+    }
   }
 },{
   n: 'join_chatroom',
-  o: function(param, store) {
+  o: function(param, cb) {
     var userId = param.userId
-      , userCallback = param.userCallback
       , chatId = param.chatId
-      , chatroom = store.get(chatId)
-    chatroom.members.push(userId)
-    chatroom.messages.push('* Chatroom joined by '+userId)
-    store.sub(chatId, userId, userCallback)
-    store.pub(chatId, 'update')
+    try {
+      var chatroom = this.get(chatId)
+      chatroom.members.push(userId)
+      chatroom.messages.push('* Chatroom joined by '+userId)
+      this.update(chatId, chatroom, cb)
+    } catch(e) {
+      cb(e)
+    }
   }
 },{
   n: 'leave_chatroom',
-  o: function(param, store) {
+  o: function(param, cb) {
     var userId = param.userId
       , chatId = param.chatId
-      , chatroom = store.get(chatId)
-    chatroom.members = chatroom.members.filter(function(u) { return u !== userId})
-    chatroom.messages.push('* Chatroom left by '+userId)
-    store.pub(chatId, 'update')
-    store.unsub(chatId, userId)
+    try {
+      var chatroom = this.get(chatId)
+      chatroom.members = chatroom.members.filter(function(u) { return u !== userId})
+      chatroom.messages.push('* Chatroom left by '+userId)
+      this.update(chatId, chatroom, cb)
+    } catch(e) {
+      cb(e)
+    }
   }
 },{
   n: 'send_message',
-  o: function(param, store) {
+  o: function(param, cb) {
     var userId = param.userId
       , msg = param.msg
       , chatId = param.chatId
-      , chatroom = store.get(chatId)
-    chatroom.messages.push(userId + ': ' + msg)
-    store.pub(chatId, 'update')
+    try {
+      var chatroom = this.get(chatId)
+      chatroom.messages.push(userId + ': ' + msg)
+      this.update(chatId, chatroom, cb)
+    } catch(e) {
+      cb(e)
+    }
   }
 })
