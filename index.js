@@ -11,15 +11,39 @@
 
 module.exports = (function() {
   'use strict'
+  var Store = require('wool-state')
+
   function Rule(r, s) {
     if (! (this instanceof Rule)) return new Rule(r, s)
-    this.rules = r.reduce(function(p, c) { p[c.n] = c ; c.o.bind(this) ; return p }.bind(this), {})
-    this.store = s
+    this.rules = r.reduce(function(p, c) { p[c.n] = c ; c.o = c.o.bind(this) ; return p }.bind(this), {})
+    this.store = s || Store()
   }
   Rule.prototype.push = function(cmd, cb) {
     this.rules[cmd.n].o(cmd.p, function(err, ids) {
-      
+      if (err) return cb(err)
+      if (ids instanceof Array) return cb(err, ids)
+      else return cb(err, [ ids ])
     })
+  }
+  Rule.prototype.get = function(id) {
+    return this.store.get(id)
+  }
+  Rule.prototype.create = function(data, cb) {
+    try {
+      var id = Store.newId()
+      this.store.set(id, data)
+      cb(null, id)
+    } catch(e) {
+      cb(e)
+    }
+  }
+  Rule.prototype.update = function(id, data, cb) {
+    try {
+      this.store.set(id, data)
+      cb(null, id)
+    } catch(e) {
+      cb(e)
+    }
   }
   return Rule
 }())

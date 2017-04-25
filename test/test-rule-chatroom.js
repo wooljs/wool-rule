@@ -23,7 +23,7 @@ exports.push({
     var userId = param.userId
     try {
       this.create({ members: [ userId ], messages: [ '* Chatroom created by '+userId ] }, cb)
-    } catch(e) {
+    } catch(e) {
       cb(e)
     }
   }

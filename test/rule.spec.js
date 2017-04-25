@@ -17,16 +17,94 @@ var test = require('tape')
   , chatroom = require(__dirname + '/test-rule-chatroom.js')
 
 test('create msg join msg msg leave leave', function(t) {
-  var rule = Rule(chatroom, Store())
+  var store = Store()
+    , rule = Rule(chatroom, store)
     , i = 0
-    , chatId = null
+    , chatId
+    , sub = function(id, value) {
+      switch (i) {
+      case 0:
+        t.deepEqual(value, { members: [ 'foo' ], messages: [ '* Chatroom created by foo' ] }, 'Call 0: '+i)
+        break
+      case 1:
+        t.deepEqual(value, { members: [ 'foo' ], messages: [
+          '* Chatroom created by foo',
+          'foo: test'
+        ] }, 'Call 1: '+i)
+        break
+      case 2:
+        t.deepEqual(value, { members: [ 'foo', 'bar' ], messages: [
+          '* Chatroom created by foo',
+          'foo: test',
+          '* Chatroom joined by bar'
+        ] }, 'Call 2: '+i)
+        break
+      case 3:
+        t.deepEqual(value, { members: [ 'foo', 'bar' ], messages: [
+          '* Chatroom created by foo',
+          'foo: test',
+          '* Chatroom joined by bar',
+          'bar: yo'
+        ] }, 'Call 3: '+i)
+        break
+      case 4:
+        t.deepEqual(value, { members: [ 'foo', 'bar' ], messages: [
+          '* Chatroom created by foo',
+          'foo: test',
+          '* Chatroom joined by bar',
+          'bar: yo',
+          'foo: bye'
+        ] }, 'Call 4: '+i)
+        break
+      case 5:
+        t.deepEqual(value, { members: [ 'bar' ], messages: [
+          '* Chatroom created by foo',
+          'foo: test',
+          '* Chatroom joined by bar',
+          'bar: yo',
+          'foo: bye',
+          '* Chatroom left by foo'
+        ] }, 'Call 5: '+i)
+        break
+      case 6:
+        t.deepEqual(value, { members: [], messages: [
+          '* Chatroom created by foo', 'foo: test',
+          '* Chatroom joined by bar',
+          'bar: yo',
+          'foo: bye',
+          '* Chatroom left by foo',
+          '* Chatroom left by bar'
+        ] }, 'Call 6: '+i)
+        break
+      default:
+        t.fail('no such call')
+        break
+      }
+      i += 1
+    }
+    , init = function(err, ids) {
+      if (err) {
+        // console.log(err)
+        t.fail(err.toString())
+      }
+      chatId = ids.pop()
+      store.sub(chatId, 'test', sub, true)
+      t.ok(ids)
+    }
+    , cb = function(err, ids) {
+      if (err) {
+        // console.log(err)
+        t.fail(err.toString())
+      }
+      t.ok(ids)
+    }
 
   rule.push({
     n: 'create_chatroom',
     p: {
       userId: 'foo',
     }
-  })
+  }, init)
 
   rule.push({
     n: 'send_message',
@@ -35,7 +113,7 @@ test('create msg join msg msg leave leave', function(t) {
       chatId: chatId,
       msg: 'test'
     }
-  })
+  }, cb)
 
   rule.push({
     n: 'join_chatroom',
@@ -43,7 +121,7 @@ test('create msg join msg msg leave leave', function(t) {
       userId: 'bar',
       chatId: chatId
     }
-  })
+  }, cb)
 
   rule.push({
     n: 'send_message',
@@ -52,7 +130,7 @@ test('create msg join msg msg leave leave', function(t) {
       chatId: chatId,
       msg: 'yo'
     }
-  })
+  }, cb)
 
   rule.push({
     n: 'send_message',
@@ -61,7 +139,7 @@ test('create msg join msg msg leave leave', function(t) {
       chatId: chatId,
       msg: 'bye'
     }
-  })
+  }, cb)
 
   rule.push({
     n: 'leave_chatroom',
@@ -69,7 +147,7 @@ test('create msg join msg msg leave leave', function(t) {
       userId: 'foo',
       chatId: chatId
     }
-  })
+  }, cb)
 
   rule.push({
     n: 'leave_chatroom',
@@ -77,114 +155,8 @@ test('create msg join msg msg leave leave', function(t) {
       userId: 'bar',
       chatId: chatId
     }
-  })
+  }, cb)
 
-  t.plan(11)
+  t.plan(14)
   t.end()
 })
-
-/*
-  function(id, value) {
-      chatId = id
-      switch (i) {
-      case 0:
-        t.deepEqual(value, { members: [ 'foo' ], messages: [ '* Chatroom created by foo' ] }, 'Call: '+i)
-        break
-      case 1:
-        t.deepEqual(value, { members: [ 'foo' ], messages: [
-          '* Chatroom created by foo',
-          'foo: test'
-        ] }, 'Call: '+i)
-        break
-      case 2:
-        t.deepEqual(value, { members: [ 'foo', 'bar' ], messages: [
-          '* Chatroom created by foo',
-          'foo: test',
-          '* Chatroom joined by bar'
-        ] }, 'Call: '+i)
-        break
-      case 4:
-        t.deepEqual(value, { members: [ 'foo', 'bar' ], messages: [
-          '* Chatroom created by foo',
-          'foo: test',
-          '* Chatroom joined by bar',
-          'bar: yo'
-        ] }, 'Call: '+i)
-        break
-      case 6:
-        t.deepEqual(value, { members: [ 'foo', 'bar' ], messages: [
-          '* Chatroom created by foo',
-          'foo: test',
-          '* Chatroom joined by bar',
-          'bar: yo',
-          'foo: bye'
-        ] }, 'Call: '+i)
-        break
-      case 8:
-        t.deepEqual(value, { members: [ 'bar' ], messages: [
-          '* Chatroom created by foo',
-          'foo: test',
-          '* Chatroom joined by bar',
-          'bar: yo',
-          'foo: bye',
-          '* Chatroom left by foo'
-        ] }, 'Call: '+i)
-        break
-      default:
-        t.fail('no such call')
-        break
-      }
-      i += 1
-    }
-  }
-  
-  function(id, value) {
-    switch (i) {
-    case 3:
-      t.deepEqual(value, { members: [ 'foo', 'bar' ], messages: [
-        '* Chatroom created by foo', 'foo: test',
-        '* Chatroom joined by bar'
-      ] }, 'Call: '+i)
-      break
-    case 5:
-      t.deepEqual(value, { members: [ 'foo', 'bar' ], messages: [
-        '* Chatroom created by foo', 'foo: test',
-        '* Chatroom joined by bar',
-        'bar: yo'
-      ] }, 'Call: '+i)
-      break
-    case 7:
-      t.deepEqual(value, { members: [ 'foo', 'bar' ], messages: [
-        '* Chatroom created by foo',
-        'foo: test', '* Chatroom joined by bar',
-        'bar: yo',
-        'foo: bye'
-      ] }, 'Call: '+i)
-      break
-    case 9:
-      t.deepEqual(value, { members: [ 'bar' ], messages: [
-        '* Chatroom created by foo', 'foo: test',
-        '* Chatroom joined by bar',
-        'bar: yo',
-        'foo: bye',
-        '* Chatroom left by foo'
-      ] }, 'Call: '+i)
-      break
-    case 10:
-      t.deepEqual(value, { members: [], messages: [
-        '* Chatroom created by foo', 'foo: test',
-        '* Chatroom joined by bar',
-        'bar: yo',
-        'foo: bye',
-        '* Chatroom left by foo',
-        '* Chatroom left by bar'
-      ] }, 'Call: '+i)
-      break
-    default:
-      t.fail('no such call')
-      break
-    }
-    i += 1
-  }
-
-*/
