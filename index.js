@@ -11,7 +11,7 @@
 
 module.exports = (function() {
   'use strict'
-  var Store = require('wool-state')
+  var Store = require('wool-store')
 
   function Rule(r, s) {
     if (! (this instanceof Rule)) return new Rule(r, s)

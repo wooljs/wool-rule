@@ -13,7 +13,7 @@
 
 var test = require('tape')
   , Rule = require(__dirname + '/../index.js')
-  , Store = require('wool-state')
+  , Store = require('wool-store')
   , chatroom = require(__dirname + '/test-rule-chatroom.js')
 
 test('create msg join msg msg leave leave', function(t) {
