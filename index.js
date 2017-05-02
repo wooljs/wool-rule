@@ -19,20 +19,19 @@ module.exports = (function() {
     this.store = s || Store()
   }
   Rule.prototype.push = function(cmd, cb) {
-    this.rules[cmd.n].o(cmd.p, function(err, ids) {
+    this.rules[cmd.n].o(cmd.d, function(err, data) {
       if (err) return cb(err)
-      if (ids instanceof Array) return cb(err, ids)
-      else return cb(err, [ ids ])
+      else return cb(err, data)
     })
   }
   Rule.prototype.get = function(id) {
     return this.store.get(id)
   }
-  Rule.prototype.create = function(data, cb) {
+  Rule.prototype.create = function(param, k, data, cb) {
     try {
-      var id = Store.newId()
+      var id = (k in param) ? param[k] : param[k] = Store.newId()
       this.store.set(id, data)
-      cb(null, id)
+      cb(null, param)
     } catch(e) {
       cb(e)
     }
@@ -40,7 +39,7 @@ module.exports = (function() {
   Rule.prototype.update = function(id, data, cb) {
     try {
       this.store.set(id, data)
-      cb(null, id)
+      cb(null)
     } catch(e) {
       cb(e)
     }

@@ -22,7 +22,7 @@ exports.push({
   o: function(param, cb) {
     var userId = param.userId
     try {
-      this.create({ members: [ userId ], messages: [ '* Chatroom created by '+userId ] }, cb)
+      this.create(param, 'chatId', { members: [ userId ], messages: [ '* Chatroom created by '+userId ] }, cb)
     } catch(e) {
       cb(e)
     }

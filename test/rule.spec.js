@@ -82,33 +82,33 @@ test('create msg join msg msg leave leave', function(t) {
       }
       i += 1
     }
-    , init = function(err, ids) {
+    , init = function(err, data) {
       if (err) {
         // console.log(err)
         t.fail(err.toString())
       }
-      chatId = ids.pop()
+      chatId = data.chatId
       store.sub(chatId, 'test', sub, true)
-      t.ok(ids)
+      t.ok(data)
     }
-    , cb = function(err, ids) {
+    , cb = function(err, data) {
       if (err) {
         // console.log(err)
         t.fail(err.toString())
       }
-      t.ok(ids)
+      t.equal(data, undefined)
     }
 
   rule.push({
     n: 'create_chatroom',
-    p: {
+    d: {
       userId: 'foo',
     }
   }, init)
 
   rule.push({
     n: 'send_message',
-    p: {
+    d: {
       userId: 'foo',
       chatId: chatId,
       msg: 'test'
@@ -117,7 +117,7 @@ test('create msg join msg msg leave leave', function(t) {
 
   rule.push({
     n: 'join_chatroom',
-    p: {
+    d: {
       userId: 'bar',
       chatId: chatId
     }
@@ -125,7 +125,7 @@ test('create msg join msg msg leave leave', function(t) {
 
   rule.push({
     n: 'send_message',
-    p: {
+    d: {
       userId: 'bar',
       chatId: chatId,
       msg: 'yo'
@@ -134,7 +134,7 @@ test('create msg join msg msg leave leave', function(t) {
 
   rule.push({
     n: 'send_message',
-    p: {
+    d: {
       userId: 'foo',
       chatId: chatId,
       msg: 'bye'
@@ -143,7 +143,7 @@ test('create msg join msg msg leave leave', function(t) {
 
   rule.push({
     n: 'leave_chatroom',
-    p: {
+    d: {
       userId: 'foo',
       chatId: chatId
     }
@@ -151,7 +151,7 @@ test('create msg join msg msg leave leave', function(t) {
 
   rule.push({
     n: 'leave_chatroom',
-    p: {
+    d: {
       userId: 'bar',
       chatId: chatId
     }
