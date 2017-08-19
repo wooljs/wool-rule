@@ -31,6 +31,6 @@
     "tape": "^4.6.3"
   },
   "dependencies": {
-    "wool-store": "0.0.2"
+    "wool-store": "0.1.0"
   }
 }
