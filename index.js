@@ -21,7 +21,11 @@ module.exports = (function() {
   Rule.prototype.push = function(cmd, cb) {
     this.rules[cmd.n].o(cmd.d, function(err, data) {
       if (err) return cb(err)
-      else return cb(err, data)
+      else try {
+        return cb(err, data)
+      } catch (e) {
+        return cb(e)
+      }
     })
   }
   Rule.prototype.get = function(id) {
