@@ -15,18 +15,33 @@ module.exports = (function() {
 
   function Rule(r, s) {
     if (! (this instanceof Rule)) return new Rule(r, s)
-    this.rules = r.reduce(function(p, c) { p[c.n] = c ; c.o = c.o.bind(this) ; return p }.bind(this), {})
+    this.rules = r.reduce(function(p, c) { var x = p[c.n] = {}; x.n = c.n ; x.p = c.p ; if ('c' in c) { x.c = c.c.bind(this) } x.o = c.o.bind(this) ; return p }.bind(this), {})
     this.store = s || Store()
   }
   Rule.prototype.push = function(cmd, cb) {
-    this.rules[cmd.n].o(cmd.d, function(err, data) {
+    var rule = this.rules[cmd.n]
+    if ('c' in rule) {
+      return rule.c(cmd.d, function(err) {
+        if (err) return cb(err)
+        else try {
+          return this.execute(rule, cmd, cb)
+        } catch (e) {
+          return cb(e)
+        }
+      }.bind(this))
+    } else {
+      return this.execute(rule, cmd, cb)
+    }
+  }
+  Rule.prototype.execute = function(rule,cmd, cb) {
+    rule.o(cmd.d, function(err, data) {
       if (err) return cb(err)
       else try {
         return cb(err, data)
       } catch (e) {
         return cb(e)
       }
-    })
+    }.bind(this))
   }
   Rule.prototype.get = function(id) {
     return this.store.get(id)

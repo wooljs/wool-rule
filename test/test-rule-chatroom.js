@@ -19,6 +19,9 @@ exports = module.exports = []
 
 exports.push({
   n: 'create_chatroom',
+  p: {
+    userId: 1
+  },
   o: function(param, cb) {
     var userId = param.userId
     try {
@@ -29,6 +32,18 @@ exports.push({
   }
 },{
   n: 'join_chatroom',
+  p: {
+    userId: 1,
+    chatId: 1
+  },
+  c: function(param, cb) {
+    var userId = param.userId
+      , chatId = param.chatId
+    var chatroom = this.get(chatId)
+    if (! chatroom) return cb('Chatroom> invalid chatId')
+    else if (chatroom.members.indexOf(userId) !== -1) return cb('Chatroom> member "'+userId+'" cannot join: already in')
+    else return cb()
+  },
   o: function(param, cb) {
     var userId = param.userId
       , chatId = param.chatId
@@ -43,6 +58,18 @@ exports.push({
   }
 },{
   n: 'leave_chatroom',
+  p: {
+    userId: 1,
+    chatId: 2
+  },
+  c: function(param, cb) {
+    var userId = param.userId
+      , chatId = param.chatId
+    var chatroom = this.get(chatId)
+    if (! chatroom) return cb('Chatroom> invalid chatId')
+    else if (chatroom.members.indexOf(userId) === -1) return cb('Chatroom> member "'+userId+'" cannot leave: not in')
+    return cb(null, chatroom && chatroom.members.indexOf(userId) !== -1)
+  },
   o: function(param, cb) {
     var userId = param.userId
       , chatId = param.chatId
@@ -57,6 +84,19 @@ exports.push({
   }
 },{
   n: 'send_message',
+  p: {
+    userId: 1,
+    chatId: 2,
+    msg: 1
+  },
+  c: function(param, cb) {
+    var userId = param.userId
+      , chatId = param.chatId
+    var chatroom = this.get(chatId)
+    if (! chatroom) return cb('Chatroom> invalid chatId')
+    else if (chatroom.members.indexOf(userId) === -1) return cb('Chatroom> member "'+userId+'" cannot send message: not in')
+    return cb(null, chatroom && chatroom.members.indexOf(userId) !== -1)
+  },
   o: function(param, cb) {
     var userId = param.userId
       , msg = param.msg
