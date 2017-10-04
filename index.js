@@ -15,7 +15,14 @@ module.exports = (function() {
 
   function Rule(r, s) {
     if (! (this instanceof Rule)) return new Rule(r, s)
-    this.rules = r.reduce(function(p, c) { var x = p[c.n] = {}; x.n = c.n ; x.p = c.p ; if ('c' in c) { x.c = c.c.bind(this) } x.o = c.o.bind(this) ; return p }.bind(this), {})
+    this.rules = r.reduce(function(p, c) {
+      var x = p[c.n] = {}
+      x.n = c.n
+      x.p = c.p
+      if ('c' in c) { x.c = c.c.bind(this) }
+      x.o = c.o.bind(this)
+      return p
+    }.bind(this), {})
     this.store = s || Store()
   }
   Rule.prototype.push = function(cmd, cb) {
