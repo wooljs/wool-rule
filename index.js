@@ -40,8 +40,8 @@ module.exports = (function() {
       return this.execute(rule, cmd, cb)
     }
   }
-  Rule.prototype.execute = function(rule,cmd, cb) {
-    rule.o(cmd.d, function(err, data) {
+  Rule.prototype.execute = function(rule, cmd, cb) {
+    return rule.o(cmd.d, function(err, data) {
       if (err) return cb(err)
       else try {
         return cb(err, data)
