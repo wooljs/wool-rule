@@ -53,9 +53,10 @@ module.exports = (function() {
   Rule.prototype.get = function(id) {
     return this.store.get(id)
   }
-  Rule.prototype.create = function(param, k, data, cb) {
+  Rule.prototype.create = function(f, data, cb) {
     try {
-      var id = (k in param) ? param[k] : param[k] = Store.newId()
+      var newId = Store.newId()
+        , id = ((typeof f === 'function') ? f(newId) : ((typeof f === 'string') ? f+newId : newId))
       this.store.set(id, data)
       cb(null, param)
     } catch(e) {
@@ -65,6 +66,14 @@ module.exports = (function() {
   Rule.prototype.update = function(id, data, cb) {
     try {
       this.store.set(id, data)
+      cb(null)
+    } catch(e) {
+      cb(e)
+    }
+  }
+  Rule.prototype.remove = function(id, cb) {
+    try {
+      this.store.del(id)
       cb(null)
     } catch(e) {
       cb(e)
