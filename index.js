@@ -58,7 +58,7 @@ module.exports = (function() {
       var newId = Store.newId()
         , id = ((typeof f === 'function') ? f(newId) : ((typeof f === 'string') ? f+newId : newId))
       this.store.set(id, data)
-      cb(null, param)
+      cb()
     } catch(e) {
       cb(e)
     }
@@ -66,7 +66,7 @@ module.exports = (function() {
   Rule.prototype.update = function(id, data, cb) {
     try {
       this.store.set(id, data)
-      cb(null)
+      cb()
     } catch(e) {
       cb(e)
     }
@@ -74,7 +74,7 @@ module.exports = (function() {
   Rule.prototype.remove = function(id, cb) {
     try {
       this.store.del(id)
-      cb(null)
+      cb()
     } catch(e) {
       cb(e)
     }
