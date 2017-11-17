@@ -28,7 +28,7 @@ module.exports = (function() {
   Rule.prototype.push = function(cmd, cb) {
     var rule = this.rules[cmd.n]
     if ('c' in rule) {
-      return rule.c(cmd.d, function(err) {
+      return rule.c(cmd.t, cmd.d, function(err) {
         if (err) return cb(err)
         else try {
           return this.execute(rule, cmd, cb)
@@ -41,7 +41,7 @@ module.exports = (function() {
     }
   }
   Rule.prototype.execute = function(rule, cmd, cb) {
-    return rule.o(cmd.d, function(err, data) {
+    return rule.o(cmd.t, cmd.d, function(err, data) {
       if (err) return cb(err)
       else try {
         return cb(err, data)
