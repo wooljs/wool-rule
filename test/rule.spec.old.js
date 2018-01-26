@@ -249,7 +249,7 @@ test('create msg join ERR:join msg msg leave leave ERR:msg ERR:leave', function(
       return function(err) {
         if (err) {
           // console.log(err)
-          t.equal(err.toString(), msg)        
+          t.equal(err.toString(), msg)
         } else {
           t.fail('should have failed')
         }
@@ -338,7 +338,7 @@ test('create msg join ERR:join msg msg leave leave ERR:msg ERR:leave', function(
       chatId: chatId
     }
   }, cbErr('Chatroom> member "foo" cannot leave: not in'))
-  
+
   t.plan(17)
   t.end()
 })
