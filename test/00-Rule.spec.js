@@ -13,9 +13,9 @@
 
 var test = require('tape')
   , Rule = require(__dirname + '/../lib/Rule.js')
+  , RuleSet = require(__dirname + '/../lib/RuleSet.js')
 
-
-test('create rule', async function(t) {
+test('create one rule', async function(t) {
   let s = {}
     , n = Date.now()
     , p = {}
@@ -40,5 +40,19 @@ test('create rule', async function(t) {
 
   t.ok(actual)
   t.plan(4)
+  t.end()
+})
+
+test('create one ruleSet', function(t) {
+  let s = {}
+    , n = Date.now()
+    , p = {}
+    , fun_test = function() {}
+    , rules = new RuleSet('test', { name: 'rule01', param: {}, run() {} }, { name: 'rule02', param: {}, run: fun_test }, { name: 'rule03', param: {}, run() {} })
+
+  t.ok(rules.getAsList().length === 3)
+  t.ok(rules.getAsMap()['test:rule02'].run === fun_test)
+
+  t.plan(2)
   t.end()
 })
