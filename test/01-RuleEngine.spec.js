@@ -16,6 +16,9 @@ var test = require('tape')
 
 test('initiate rule-engine', async function(t) {
   let rgine = new RuleEngine()
+    , command = {} // TODO define Command class in relevant package
+  
+  rgine.execute(command)
   
   //t.ok(actual)
   //t.plan(4)

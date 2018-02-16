@@ -13,13 +13,12 @@
 
 var test = require('tape')
   , Rule = require(__dirname + '/../lib/Rule.js')
-  , RuleSet = require(__dirname + '/../lib/RuleSet.js')
 
 test('create one rule', async function(t) {
   let s = {}
     , n = Date.now()
     , p = {}
-    , rule = new Rule({
+    , rule = Rule.build({
       namespace: 'test',
       name: 'rule',
       param: {},
@@ -44,14 +43,11 @@ test('create one rule', async function(t) {
 })
 
 test('create one ruleSet', function(t) {
-  let s = {}
-    , n = Date.now()
-    , p = {}
-    , fun_test = function() {}
-    , rules = new RuleSet('test', { name: 'rule01', param: {}, run() {} }, { name: 'rule02', param: {}, run: fun_test }, { name: 'rule03', param: {}, run() {} })
+  let fun_test = function() {}
+    , rules = Rule.buildSet('test', { name: 'rule01', param: {}, run() {} }, { name: 'rule02', param: {}, run: fun_test }, { name: 'rule03', param: {}, run() {} })
 
-  t.ok(rules.getAsList().length === 3)
-  t.ok(rules.getAsMap()['test:rule02'].run === fun_test)
+  t.ok(rules.length === 3)
+  t.ok(rules[1].run === fun_test)
 
   t.plan(2)
   t.end()
