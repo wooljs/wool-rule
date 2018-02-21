@@ -12,15 +12,50 @@
 'use strict'
 
 var test = require('tape')
+  , Rule = require(__dirname + '/../lib/Rule.js')
+  , RuleParam = require(__dirname + '/../lib/RuleParam.js')
   , RuleEngine = require(__dirname + '/../lib/RuleEngine.js')
+  , Store = require('wool-store').Store
+  , Command = require('wool-model').Command
 
 test('initiate rule-engine', async function(t) {
-  let rgine = new RuleEngine()
-    , command = {} // TODO define Command class in relevant package
-  
-  rgine.execute(command)
-  
-  //t.ok(actual)
+  let store = new Store()
+    , rgine = new RuleEngine(store)
+    , chatId = null
+
+  store.subAll('init', k => { if (chatId === null) { chatId = k } })
+
+  rgine.addRules(Rule.buildSet('chatroom', {
+    name: 'create',
+    param: {
+      userId: RuleParam.ID
+    },
+    async run(store, t, param) {
+      let k = Store.newId()
+        , { userId } = param
+      await store.set(k, { members: [ userId ], messages: [ '* Chatroom created by '+userId ] })
+    }
+  },{
+    name: 'join',
+    param: {
+      userId: RuleParam.ID
+    },
+    async run(store, t, param) {
+      let {chatId, userId} = param
+        , chatroom = await store.get(chatId)
+      chatroom.members.push(userId)
+      chatroom.messages.push('* Chatroom joined by '+userId)
+      await store.set(chatId, chatroom)
+    }
+  }))
+
+  await rgine.execute(new Command(Date.now(), 'chatroom:create', {userId: 'foo'}))
+  //console.log(chatId)
+  await rgine.execute(new Command(Date.now(), 'chatroom:join', {chatId, userId: 'bar'}))
+
+  let chatroom = await store.get(chatId)
+
+  t.equals(chatroom, {})
   //t.plan(4)
   t.end()
 })

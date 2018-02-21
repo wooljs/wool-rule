@@ -34,9 +34,7 @@ test('create one rule', async function(t) {
       },
       run() {}
     })
-
-  let actual = await rule.validate(s, n, p)
-
+    , actual = await rule.validate(s, n, p)
   t.ok(actual)
   t.plan(4)
   t.end()
