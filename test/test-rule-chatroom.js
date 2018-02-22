@@ -14,99 +14,86 @@
  * This file is a model of Rule file
  *
  */
+var Store = require('wool-store').Store
+  , Rule = require(__dirname + '/../lib/Rule.js')
+  , RuleParam = require(__dirname + '/../lib/RuleParam.js')
 
-exports = module.exports = []
-
-exports.push({
-  n: 'create_chatroom',
-  p: {
-    userId: 1
+module.exports = Rule.buildSet('chatroom', {
+  name: 'create',
+  param: {
+    userId: RuleParam.ID
   },
-  o: function(param, cb) {
-    var userId = param.userId
-    try {
-      this.create(param, 'chatId', { members: [ userId ], messages: [ '* Chatroom created by '+userId ] }, cb)
-    } catch(e) {
-      cb(e)
-    }
+  async run(store, t, param) {
+    let chatId = Store.newId()
+      , { userId } = param
+      , user = await store.get(userId)
+    await store.set(chatId, { members: [ userId ], messages: [ '* Chatroom created by '+userId ] })
+    user.membership.push(chatId)
+    await store.set(userId, user)
   }
 },{
-  n: 'join_chatroom',
-  p: {
-    userId: 1,
-    chatId: 1
+  name: 'join',
+  param: {
+    userId: RuleParam.ID,
+    chatId: RuleParam.ID
   },
-  c: function(param, cb) {
-    var userId = param.userId
-      , chatId = param.chatId
-    var chatroom = this.get(chatId)
-    if (! chatroom) return cb('Chatroom> invalid chatId')
-    else if (chatroom.members.indexOf(userId) !== -1) return cb('Chatroom> member "'+userId+'" cannot join: already in')
-    else return cb()
+  async cond(store, t, param) {
+    let {chatId, userId} = param
+      , chatroom = await store.get(chatId)
+    if (!chatroom) throw new Error('Chatroom> invalid chatId '+chatId)
+    else if (chatroom.members.indexOf(userId) !== -1) throw new Error('Chatroom> member "'+userId+'" cannot join: already in')
+    return true
   },
-  o: function(param, cb) {
-    var userId = param.userId
-      , chatId = param.chatId
-    try {
-      var chatroom = this.get(chatId)
-      chatroom.members.push(userId)
-      chatroom.messages.push('* Chatroom joined by '+userId)
-      this.update(chatId, chatroom, cb)
-    } catch(e) {
-      cb(e)
-    }
+  async run(store, t, param) {
+    let {chatId, userId} = param
+      , chatroom = await store.get(chatId)
+      , user = await store.get(userId)
+    chatroom.members.push(userId)
+    chatroom.messages.push('* Chatroom joined by '+userId)
+    await store.set(chatId, chatroom)
+    user.membership.push(chatId)
+    await store.set(userId, user)
   }
 },{
-  n: 'leave_chatroom',
-  p: {
-    userId: 1,
-    chatId: 2
+  name: 'leave',
+  param: {
+    userId: RuleParam.ID,
+    chatId: RuleParam.ID
   },
-  c: function(param, cb) {
-    var userId = param.userId
-      , chatId = param.chatId
-    var chatroom = this.get(chatId)
-    if (! chatroom) return cb('Chatroom> invalid chatId')
-    else if (chatroom.members.indexOf(userId) === -1) return cb('Chatroom> member "'+userId+'" cannot leave: not in')
-    return cb(null, chatroom && chatroom.members.indexOf(userId) !== -1)
+  async cond(store, t, param) {
+    let {chatId, userId} = param
+      , chatroom = await store.get(chatId)
+    if (!chatroom) throw new Error('Chatroom> invalid chatId '+chatId)
+    else if (chatroom.members.indexOf(userId) === -1) throw new Error('Chatroom> member "'+userId+'" cannot leave: not in')
+    return true
   },
-  o: function(param, cb) {
-    var userId = param.userId
-      , chatId = param.chatId
-    try {
-      var chatroom = this.get(chatId)
-      chatroom.members = chatroom.members.filter(function(u) { return u !== userId})
-      chatroom.messages.push('* Chatroom left by '+userId)
-      this.update(chatId, chatroom, cb)
-    } catch(e) {
-      cb(e)
-    }
+  async run(store, t, param) {
+    let {chatId, userId} = param
+      , chatroom = await store.get(chatId)
+      , user = await store.get(userId)
+    chatroom.members = chatroom.members.filter(u => u !== userId )
+    chatroom.messages.push('* Chatroom left by '+userId)
+    await store.set(chatId, chatroom)
+    user.membership = user.membership.filter(x => x !== chatId)
   }
 },{
-  n: 'send_message',
-  p: {
-    userId: 1,
-    chatId: 2,
-    msg: 1
+  name: 'send',
+  param: {
+    userId: RuleParam.ID,
+    chatId: RuleParam.ID,
+    msg: RuleParam.Str
   },
-  c: function(param, cb) {
-    var userId = param.userId
-      , chatId = param.chatId
-    var chatroom = this.get(chatId)
-    if (! chatroom) return cb('Chatroom> invalid chatId')
-    else if (chatroom.members.indexOf(userId) === -1) return cb('Chatroom> member "'+userId+'" cannot send message: not in')
-    return cb(null, chatroom && chatroom.members.indexOf(userId) !== -1)
+  async cond(store, t, param) {
+    let {chatId, userId} = param
+      , chatroom = await store.get(chatId)
+    if (!chatroom) throw new Error('Chatroom> invalid chatId '+chatId)
+    else if (chatroom.members.indexOf(userId) === -1) throw new Error('Chatroom> member "'+userId+'" cannot send message: not in')
+    return true
   },
-  o: function(param, cb) {
-    var userId = param.userId
-      , msg = param.msg
-      , chatId = param.chatId
-    try {
-      var chatroom = this.get(chatId)
-      chatroom.messages.push(userId + ': ' + msg)
-      this.update(chatId, chatroom, cb)
-    } catch(e) {
-      cb(e)
-    }
+  async run(store, t, param) {
+    let {chatId, userId, msg} = param
+      , chatroom = await store.get(chatId)
+    chatroom.messages.push(userId + ': ' + msg)
+    await store.set(chatId, chatroom)
   }
 })

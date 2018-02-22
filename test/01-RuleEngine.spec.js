@@ -12,50 +12,130 @@
 'use strict'
 
 var test = require('tape')
-  , Rule = require(__dirname + '/../lib/Rule.js')
-  , RuleParam = require(__dirname + '/../lib/RuleParam.js')
   , RuleEngine = require(__dirname + '/../lib/RuleEngine.js')
   , Store = require('wool-store').Store
   , Command = require('wool-model').Command
+  , chatroomRule = require(__dirname + '/test-rule-chatroom.js')
 
-test('initiate rule-engine', async function(t) {
-  let store = new Store()
-    , rgine = new RuleEngine(store)
-    , chatId = null
+test('rule-engine with chatroom rules: create msg join msg msg leave leave', async function(t) {
+  try {
+    let store = new Store()
+      , rgine = new RuleEngine(store)
+    rgine.addRules(chatroomRule)
 
-  store.subAll('init', k => { if (chatId === null) { chatId = k } })
+    store.set('foo', { membership: [] })
+    store.set('bar', { membership: [] })
 
-  rgine.addRules(Rule.buildSet('chatroom', {
-    name: 'create',
-    param: {
-      userId: RuleParam.ID
-    },
-    async run(store, t, param) {
-      let k = Store.newId()
-        , { userId } = param
-      await store.set(k, { members: [ userId ], messages: [ '* Chatroom created by '+userId ] })
+    let userFoo = await store.get('foo')
+      , userBar = await store.get('bar')
+    t.deepEqual(userFoo.membership.length, 0)
+    t.deepEqual(userBar.membership.length, 0)
+    
+    await rgine.execute(new Command(Date.now(), 'chatroom:create', {userId: 'foo'}))
+    t.deepEqual(userFoo.membership.length, 1)
+    t.deepEqual(userBar.membership.length, 0)
+
+    let chatId = userFoo.membership[0]
+    let chatroom = await store.get(chatId)
+    t.deepEqual(chatroom, { members: [ 'foo' ], messages: [ '* Chatroom created by foo' ] })
+
+    await rgine.execute(new Command(Date.now(), 'chatroom:send', { chatId, userId: 'foo', msg: 'test'}))
+    t.deepEqual(chatroom, { members: [ 'foo' ], messages: [ '* Chatroom created by foo', 'foo: test' ] })
+
+    await rgine.execute(new Command(Date.now(), 'chatroom:join', {chatId, userId: 'bar'}))
+    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar' ] })
+    t.deepEqual(userBar.membership.length, 1)
+
+    await rgine.execute(new Command(Date.now(), 'chatroom:send', { chatId, userId: 'bar', msg: 'yo'}))
+    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo' ] })
+
+    await rgine.execute(new Command(Date.now(), 'chatroom:send', { chatId, userId: 'foo', msg: 'bye'}))
+    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye' ] })
+
+    await rgine.execute(new Command(Date.now(), 'chatroom:leave', { chatId, userId: 'foo'}))
+    t.deepEqual(chatroom, { members: [ 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo' ] })
+    t.deepEqual(userFoo.membership.length, 0)
+    t.deepEqual(userBar.membership.length, 1)
+
+    await rgine.execute(new Command(Date.now(), 'chatroom:leave', { chatId, userId: 'bar'}))
+    t.deepEqual(chatroom, { members: [ ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo', '* Chatroom left by bar' ] })
+    t.deepEqual(userFoo.membership.length, 0)
+    t.deepEqual(userBar.membership.length, 0)
+
+  } catch(e) {
+    t.fail(e)
+  } finally {
+    t.plan(16)
+    t.end()
+  }
+})
+
+test('rule-engine with chatroom rules: create msg join ERR:join msg msg leave leave ERR:msg ERR:leave', async function(t) {
+  try {
+    let store = new Store()
+      , rgine = new RuleEngine(store)
+    rgine.addRules(chatroomRule)
+
+    store.set('foo', { membership: [] })
+    store.set('bar', { membership: [] })
+
+    let userFoo = await store.get('foo')
+      , userBar = await store.get('bar')
+    t.deepEqual(userFoo.membership.length, 0)
+    t.deepEqual(userBar.membership.length, 0)
+    
+    await rgine.execute(new Command(Date.now(), 'chatroom:create', {userId: 'foo'}))
+    t.deepEqual(userFoo.membership.length, 1)
+    t.deepEqual(userBar.membership.length, 0)
+
+    let chatId = userFoo.membership[0]
+    let chatroom = await store.get(chatId)
+    t.deepEqual(chatroom, { members: [ 'foo' ], messages: [ '* Chatroom created by foo' ] })
+
+    await rgine.execute(new Command(Date.now(), 'chatroom:send', { chatId, userId: 'foo', msg: 'test'}))
+    t.deepEqual(chatroom, { members: [ 'foo' ], messages: [ '* Chatroom created by foo', 'foo: test' ] })
+
+    await rgine.execute(new Command(Date.now(), 'chatroom:join', {chatId, userId: 'bar'}))
+    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar' ] })
+    t.deepEqual(userBar.membership.length, 1)
+    
+    try {
+      await rgine.execute(new Command(Date.now(), 'chatroom:join', {chatId, userId: 'bar'}))
+    } catch(e) {
+      t.deepEqual(e.message, 'Chatroom> member "bar" cannot join: already in')
     }
-  },{
-    name: 'join',
-    param: {
-      userId: RuleParam.ID
-    },
-    async run(store, t, param) {
-      let {chatId, userId} = param
-        , chatroom = await store.get(chatId)
-      chatroom.members.push(userId)
-      chatroom.messages.push('* Chatroom joined by '+userId)
-      await store.set(chatId, chatroom)
+
+    await rgine.execute(new Command(Date.now(), 'chatroom:send', { chatId, userId: 'bar', msg: 'yo'}))
+    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo' ] })
+
+    await rgine.execute(new Command(Date.now(), 'chatroom:send', { chatId, userId: 'foo', msg: 'bye'}))
+    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye' ] })
+
+    await rgine.execute(new Command(Date.now(), 'chatroom:leave', { chatId, userId: 'foo'}))
+    t.deepEqual(chatroom, { members: [ 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo' ] })
+    t.deepEqual(userFoo.membership.length, 0)
+    t.deepEqual(userBar.membership.length, 1)
+
+    await rgine.execute(new Command(Date.now(), 'chatroom:leave', { chatId, userId: 'bar'}))
+    t.deepEqual(chatroom, { members: [ ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo', '* Chatroom left by bar' ] })
+    t.deepEqual(userFoo.membership.length, 0)
+    t.deepEqual(userBar.membership.length, 0)
+    
+    try {
+      await rgine.execute(new Command(Date.now(), 'chatroom:send', { chatId, userId: 'bar', msg: 'yo'}))
+    } catch(e) {
+      t.deepEqual(e.message, 'Chatroom> member "bar" cannot send message: not in')
     }
-  }))
+    try {
+      await rgine.execute(new Command(Date.now(), 'chatroom:leave', { chatId, userId: 'foo'}))
+    } catch(e) {
+      t.deepEqual(e.message, 'Chatroom> member "foo" cannot leave: not in')
+    }
 
-  await rgine.execute(new Command(Date.now(), 'chatroom:create', {userId: 'foo'}))
-  //console.log(chatId)
-  await rgine.execute(new Command(Date.now(), 'chatroom:join', {chatId, userId: 'bar'}))
-
-  let chatroom = await store.get(chatId)
-
-  t.equals(chatroom, {})
-  //t.plan(4)
-  t.end()
+  } catch(e) {
+    t.fail(e)
+  } finally {
+    t.plan(19)
+    t.end()
+  }
 })
