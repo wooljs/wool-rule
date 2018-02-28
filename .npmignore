@@ -1,0 +1,5 @@
+.git*
+.eslintrc*
+example/*
+coverage/*
+test/*
