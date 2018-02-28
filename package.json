@@ -26,13 +26,13 @@
   },
   "homepage": "https://github.com/nicocube/wool-rule#readme",
   "devDependencies": {
-    "eslint": "^3.14.1",
-    "istanbul": "^1.1.0-alpha.1",
-    "tap-summary": "^3.0.1",
-    "tape": "^4.9.0"
+    "eslint": "3.14.1",
+    "istanbul": "1.1.0-alpha.1",
+    "tap-summary": "3.0.1",
+    "tape": "4.9.0"
   },
   "dependencies": {
-    "wool-model": "^1.0.0",
-    "wool-store": "^1.0.0"
+    "wool-model": "1.1.0",
+    "wool-store": "1.0.0"
   }
 }
