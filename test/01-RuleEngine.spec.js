@@ -123,7 +123,7 @@ test('rule-engine execute command with chatroom rules: create msg join I:join ms
     t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:send {"chatId":"'+chatId+'","userId":"bar","msg":"yo"}')
 
     ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:err', {}))
-    t.deepEqual(ev.stringify(), 'E: '+d.toISOString()+'-0000 chatroom:err {} ERROR!\nError: ERROR!\n    at Rule.run (/home/n3/sources/repo/wool-rule/test/test-rule-chatroom.js:104:11)\n    at Rule.apply (/home/n3/sources/repo/wool-rule/lib/Rule.js:57:16)\n    at RuleEngine.execute (/home/n3/sources/repo/wool-rule/lib/RuleEngine.js:35:20)\n    at <anonymous>\n    at process._tickCallback (internal/process/next_tick.js:188:7)')
+    t.deepEqual(ev.stringify(), 'E: '+d.toISOString()+'-0000 chatroom:err {} ERROR!\nError: ERROR!\n    at Rule.run (/home/n3/sources/repo/wool-rule/test/test-rule-chatroom.js:104:11)\n    at Rule.apply (/home/n3/sources/repo/wool-rule/lib/Rule.js:61:16)\n    at RuleEngine.execute (/home/n3/sources/repo/wool-rule/lib/RuleEngine.js:35:20)\n    at <anonymous>\n    at process._tickCallback (internal/process/next_tick.js:188:7)')
 
     ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'bye'}))
     t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye' ] })
