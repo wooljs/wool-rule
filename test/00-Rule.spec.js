@@ -21,7 +21,7 @@ test('create one rule', async function(t) {
     , rule = Rule.build({
       namespace: 'test',
       name: 'rule',
-      param: {},
+      param: [],
       cond(store, tmstp, param) {
         return new Promise(resolve => {
           setTimeout(() => {
@@ -42,7 +42,7 @@ test('create one rule', async function(t) {
 
 test('create one ruleSet', function(t) {
   let fun_test = function() {}
-    , rules = Rule.buildSet('test', { name: 'rule01', param: {}, run() {} }, { name: 'rule02', param: {}, run: fun_test }, { name: 'rule03', param: {}, run() {} })
+    , rules = Rule.buildSet('test', { name: 'rule01', run() {} }, { name: 'rule02', run: fun_test }, { name: 'rule03', run() {} })
 
   t.ok(rules.length === 3)
   t.ok(rules[1].run === fun_test)
