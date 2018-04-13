@@ -34,7 +34,7 @@
     "tape": "^4.9.0"
   },
   "dependencies": {
-    "wool-model": "^1.2.2",
+    "wool-model": "^1.2.3",
     "wool-store": "^1.0.0"
   }
 }
