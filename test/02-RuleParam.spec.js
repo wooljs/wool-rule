@@ -39,6 +39,20 @@ test('rule-param STR.regex', async function(t) {
   t.end()
 })
 
+test('rule-param STR.regex.crypto', async function(t) {
+  let check = RuleParam.STR('str').regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9]{8,}$/).crypto(x => x)
+    , store = new Store()
+
+  t.ok(await check.validate(store, { str: 'FooBar42' }))
+  t.ok(await check.validate(store, { str: 'xD5Ae8f4ysFG9luB' }))
+  t.notOk(await check.validate(store, { str: 'bar' }))
+  t.notOk(await check.validate(store, { str: 'another' }))
+  t.notOk(await check.validate(store, { str: 42 }))
+  t.notOk(await check.validate(store, { foo: 'bar' }))
+  t.plan(6)
+  t.end()
+})
+
 test('rule-param ENUM', async function(t) {
   let check = RuleParam.ENUM('str', [ 'foo', 'bar', 'another' ])
     , store = new Store()
