@@ -26,8 +26,8 @@ test('rule-engine execute command with chatroom rules: create msg join msg msg l
       , chatId = null
     rgine.addRules(chatroomRule)
 
-    store.set('foo', { membership: [] })
-    store.set('bar', { membership: [] })
+    await store.set('foo', { membership: [] })
+    await store.set('bar', { membership: [] })
 
     let userFoo = await store.get('foo')
       , userBar = await store.get('bar')
@@ -123,7 +123,9 @@ test('rule-engine execute command with chatroom rules: create msg join I:join ms
     t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:send {"chatId":"'+chatId+'","userId":"bar","msg":"yo"}')
 
     ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:err', {}))
-    t.ok(ev.stringify().match('^E: '+d.toISOString()+'-0000 chatroom:err {} ERROR!%0AError%3A%20ERROR!%0A%20%20%20%20at%20Rule.run%20\\(.*%2Fwool-rule%2Ftest%2Ftest-rule-chatroom.js%3A86%3A11\\)%0A%20%20%20%20at%20Rule.apply%20\\(.*%2Fwool-rule%2Flib%2FRule.js%3A\\d+%3A\\d+\\)%0A%20%20%20%20at%20RuleEngine.execute%20\\(.*%2Fwool-rule%2Flib%2FRuleEngine.js%3A\\d+%3A\\d+\\)%0A%20%20%20%20at%20process._tickCallback%20\\(internal%2Fprocess%2Fnext_tick.js%3A68%3A7\\)'), 'evaluate by regex fail')
+    let str = ev.stringify()
+    //console.log(str)
+    t.ok(str.match('^E: '+d.toISOString()+'-0000 chatroom:err {} ERROR!%0AError%3A%20ERROR!%0A%20%20%20%20at%20Rule.run%20\\(.*%2Fwool-rule%2Ftest%2Ftest-rule-chatroom.js%3A86%3A11\\)%0A%20%20%20%20at%20Rule.apply%20\\(.*%2Fwool-rule%2Flib%2FRule.js%3A\\d+%3A\\d+\\)%0A%20%20%20%20at%20RuleEngine.execute%20\\(.*%2Fwool-rule%2Flib%2FRuleEngine.js%3A\\d+%3A\\d+\\).*$'), 'evaluate by regex fail')
 
     ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'bye'}))
     t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye' ] })
