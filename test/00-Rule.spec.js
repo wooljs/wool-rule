@@ -13,6 +13,7 @@
 
 var test = require('tape')
   , Rule = require(__dirname + '/../lib/Rule.js')
+  , { ParamCheck } = require(__dirname + '/../lib/RuleParam.js')
 
 test('create one rule', async function(t) {
   let s = {}
@@ -48,5 +49,22 @@ test('create one ruleSet', function(t) {
   t.ok(rules[1].run === fun_test)
 
   t.plan(2)
+  t.end()
+})
+
+test('filter params', function(t) {
+  let rule = Rule.build({
+    namespace: 'test',
+    name: 'rule',
+    param: [ new ParamCheck('foo'), new ParamCheck('fizbuz'), new ParamCheck('bar').drop() ],
+    run() {}
+  })
+
+  t.deepEqual(rule.filterParam({}), {})
+  t.deepEqual(rule.filterParam({foo: 1}), {foo:1})
+  t.deepEqual(rule.filterParam({foo: 1, fizbuz: 'toto' }), {foo:1, fizbuz: 'toto' })
+  t.deepEqual(rule.filterParam({foo: 1, fizbuz: 'toto', bar: 'bye' }), {foo:1, fizbuz: 'toto' })
+  t.deepEqual(rule.filterParam({foo: 1, fizbuz: 'toto', bar: 'bye', bim:'unexpected' }), {foo:1, fizbuz: 'toto'})
+  t.plan(5)
   t.end()
 })
