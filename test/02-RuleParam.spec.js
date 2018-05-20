@@ -26,6 +26,28 @@ test('rule-param STR', async function(t) {
   t.end()
 })
 
+test('rule-param STR.asDate', async function(t) {
+  let check = RuleParam.STR('str').asDate()
+    , store = new Store()
+    , p
+
+  t.ok(await check.validate(store, p = { str: '2018-05-19' }))
+  t.deepEqual(p, { str: new Date(1526688000000)})
+
+  t.ok(await check.validate(store, p = { str: '2018-05-19T06:04:29' }))
+  t.deepEqual(p, { str: new Date(1526709869000)})
+
+  t.ok(await check.validate(store, p = { str: '2018-05-19T06:04:29.945Z' }))
+  t.deepEqual(p, { str: new Date(1526709869945)})
+
+  t.notOk(await check.validate(store, { str: 1526688000000 })) // we check it is a string so this is invalid
+  t.notOk(await check.validate(store, { str: '1526709869945' }))
+  t.notOk(await check.validate(store, { str: 'plop' }))
+
+  t.plan(9)
+  t.end()
+})
+
 test('rule-param STR.regex', async function(t) {
   let check = RuleParam.STR('str').regex(/^f/)
     , store = new Store()
