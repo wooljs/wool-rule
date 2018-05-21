@@ -15,7 +15,7 @@ const test = require('tape')
   , RuleParam = require(__dirname + '/../lib/RuleParam.js')
   , { Store } = require('wool-store')
 
-// TODO ValidID, Crypto asymetric 
+// TODO ValidID, Crypto asymetric
 
 test('RuleParam toDTO', async function(t) {
   let check = new RuleParam([
