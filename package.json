@@ -11,6 +11,7 @@
     "coverage": "istanbul cover tape test/**/*.spec.js",
     "lint": "eslint index.js lib/ test/",
     "autolint": "nodemon -x eslint index.js lib/ test/",
+    "link-all": "for u in $(ls -1d node_modules/wool-* | xargs basename -a); do npm link $u; done;",
     "preversion": "npm test"
   },
   "repository": {
