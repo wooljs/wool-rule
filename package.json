@@ -1,6 +1,6 @@
 {
   "name": "wool-rule",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Lib for Rules in Wool",
   "main": "index.js",
   "scripts": {
