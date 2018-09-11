@@ -11,7 +11,5 @@
 
 module.exports = {
   Rule: require('./lib/Rule'),
-  RuleEngine: require('./lib/RuleEngine'),
-  RuleParam: require('./lib/RuleParam'),
-  InvalidRuleError: require('./lib/InvalidRuleError')
+  RuleEngine: require('./lib/RuleEngine')
 }

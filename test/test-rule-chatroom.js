@@ -14,9 +14,10 @@
  * This file is a model of Rule file
  *
  */
-const { Rule, RuleParam, InvalidRuleError } = require(__dirname + '/../index.js')
-  , UserID = RuleParam.ID('userId')
-  , ChatID = RuleParam.ID('chatId')
+const { Rule } = require(__dirname + '/../index.js')
+  , Checks = require('wool-validate')
+  , UserID = Checks.Id('userId')
+  , ChatID = Checks.Id('chatId')
 
 module.exports = Rule.buildSet('chatroom', {
   name: 'create',
@@ -34,7 +35,7 @@ module.exports = Rule.buildSet('chatroom', {
   async cond(store, param) {
     let {chatId, userId} = param
       , chatroom = await store.get(chatId)
-    if (chatroom.members.indexOf(userId) !== -1) throw new InvalidRuleError('Chatroom> member "'+userId+'" cannot join: already in')
+    if (chatroom.members.indexOf(userId) !== -1) throw new Checks.InvalidRuleError('Chatroom> member "'+userId+'" cannot join: already in')
     return true
   },
   async run(store, param) {
@@ -53,7 +54,7 @@ module.exports = Rule.buildSet('chatroom', {
   async cond(store, param) {
     let {chatId, userId} = param
       , chatroom = await store.get(chatId)
-    if (chatroom.members.indexOf(userId) === -1) throw new InvalidRuleError('Chatroom> member "'+userId+'" cannot leave: not in')
+    if (chatroom.members.indexOf(userId) === -1) throw new Checks.InvalidRuleError('Chatroom> member "'+userId+'" cannot leave: not in')
     return true
   },
   async run(store, param) {
@@ -67,11 +68,11 @@ module.exports = Rule.buildSet('chatroom', {
   }
 },{
   name: 'send',
-  param: [ UserID, ChatID, RuleParam.STR('msg') ],
+  param: [ UserID, ChatID, Checks.Str('msg') ],
   async cond(store, param) {
     let {chatId, userId} = param
       , chatroom = await store.get(chatId)
-    if (chatroom.members.indexOf(userId) === -1) throw new InvalidRuleError('Chatroom> member "'+userId+'" cannot send message: not in')
+    if (chatroom.members.indexOf(userId) === -1) throw new Checks.InvalidRuleError('Chatroom> member "'+userId+'" cannot send message: not in')
     return true
   },
   async run(store, param) {

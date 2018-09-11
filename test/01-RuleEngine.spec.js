@@ -125,7 +125,7 @@ test('rule-engine execute command with chatroom rules: create msg join I:join ms
     ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:err', {}))
     let str = ev.stringify()
     //console.log(str)
-    t.ok(str.match('^E: '+d.toISOString()+'-0000 chatroom:err {} ERROR!%0AError%3A%20ERROR!%0A%20%20%20%20at%20Rule.run%20\\(.*%2Fwool-rule%2Ftest%2Ftest-rule-chatroom.js%3A86%3A11\\)%0A%20%20%20%20at%20Rule.apply%20\\(.*%2Fwool-rule%2Flib%2FRule.js%3A\\d+%3A\\d+\\)%0A%20%20%20%20at%20RuleEngine.execute%20\\(.*%2Fwool-rule%2Flib%2FRuleEngine.js%3A\\d+%3A\\d+\\).*$'), 'evaluate by regex fail')
+    t.ok(str.match('^E: '+d.toISOString()+'-0000 chatroom:err {} ERROR!%0AError%3A%20ERROR!%0A%20%20%20%20at%20Rule.run%20\\(.*%2Fwool-rule%2Ftest%2Ftest-rule-chatroom.js%3A..%3A11\\)%0A%20%20%20%20at%20Rule.apply%20\\(.*%2Fwool-rule%2Flib%2FRule.js%3A\\d+%3A\\d+\\)%0A%20%20%20%20at%20RuleEngine.execute%20\\(.*%2Fwool-rule%2Flib%2FRuleEngine.js%3A\\d+%3A\\d+\\).*$'), 'evaluate by regex fail')
 
     ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'bye'}))
     t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye' ] })

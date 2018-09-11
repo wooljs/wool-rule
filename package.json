@@ -21,7 +21,7 @@
   "keywords": [
     "rule"
   ],
-  "author": "Nicolas Lochet",
+  "author": "Nicolas Lochet <nicolas.lochet@gmail.com>",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/nicocube/wool-rule/issues"
@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "wool-model": "^1.2.3",
-    "wool-store": "^1.2.2"
+    "wool-store": "^1.2.2",
+    "wool-validate": "^1.0.0"
   }
 }

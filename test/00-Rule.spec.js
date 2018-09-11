@@ -13,7 +13,7 @@
 
 var test = require('tape')
   , Rule = require(__dirname + '/../lib/Rule.js')
-  , { ParamCheck } = require(__dirname + '/../lib/RuleParam.js')
+  , { ParamCheck } = require('wool-validate')
 
 test('create one rule', async function(t) {
   let s = {}
