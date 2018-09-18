@@ -11,7 +11,7 @@
 
 'use strict'
 
-var test = require('tape')
+var test = require('tape-async')
   , Rule = require(__dirname + '/../lib/Rule.js')
   , { ParamCheck } = require('wool-validate')
 
