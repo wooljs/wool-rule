@@ -29,14 +29,13 @@ test('create one rule', async function(t) {
             t.deepEqual(s, store)
             t.deepEqual(n, tmstp)
             t.deepEqual(p, param)
-            resolve(true)
+            resolve(undefined)
           }, 100)
         })
       },
       run() {}
     })
-    , actual = await rule.validate(s, n, p)
-  t.ok(actual)
+  t.ok('undefined' === typeof await rule.validate(s, n, p))
   t.plan(4)
   t.end()
 })
@@ -49,6 +48,50 @@ test('create one ruleSet', function(t) {
   t.ok(rules[1].run === fun_test)
 
   t.plan(2)
+  t.end()
+})
+
+test('create bad rule', function(t) {
+  t.throws(() => Rule.build({}), /^Error: field "namespace" is.*/)
+  t.throws(() => Rule.build({namespace: 'test'}), /^Error: field "name" is.*/)
+  t.throws(() => Rule.build({namespace: 'test', name: 'plop'}), /^Error: field "run" is.*/)
+  t.throws(() => Rule.build({
+    namespace: null,
+    name: undefined,
+    param: [],
+    cond() {},
+    run() {}
+  }), /^Error: field "namespace" must be a string.*/)
+  t.throws(() => Rule.build({
+    namespace: 'test',
+    name: undefined,
+    param: [],
+    cond() {},
+    run() {}
+  }), /^Error: field "name" must be a string.*/)
+  t.throws(() => Rule.build({
+    namespace: 'test',
+    name: 'rule',
+    param: {},
+    cond() {},
+    run() {}
+  }), /^Error: field "param" must be an array.*/, '')
+  t.throws(() => Rule.build({
+    namespace: 'test',
+    name: 'rule',
+    param: [],
+    cond: null,
+    run() {}
+  }), /^Error: field "cond" must be a function.*/, '')
+  t.throws(() => Rule.build({
+    namespace: 'test',
+    name: 'rule',
+    param: [],
+    cond() {},
+    run: 'plop'
+  }), /^Error: field "run" must be a function.*/, '')
+
+  t.plan(8)
   t.end()
 })
 
