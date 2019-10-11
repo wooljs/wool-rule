@@ -27,16 +27,16 @@
   },
   "homepage": "https://github.com/nicocube/wool-rule#readme",
   "devDependencies": {
-    "eslint": "^6.2.2",
-    "nodemon": "^1.19.1",
+    "eslint": "^6.5.1",
+    "nodemon": "^1.19.3",
     "nyc": "^14.1.1",
     "tap-summary": "^4.0.0",
     "tape": "^4.11.0",
     "tape-async": "^2.3.0"
   },
   "dependencies": {
-    "wool-model": "^2.0.2",
-    "wool-store": "^1.2.12",
-    "wool-validate": "^2.1.0"
+    "wool-model": "^2.0.3",
+    "wool-store": "^1.2.13",
+    "wool-validate": "^2.1.1"
   }
 }
