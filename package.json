@@ -31,12 +31,12 @@
     "nodemon": "^2.0.2",
     "nyc": "^15.0.0",
     "tap-summary": "^4.0.0",
-    "tape": "^4.13.0",
+    "tape": "^4.13.2",
     "tape-async": "^2.3.0"
   },
   "dependencies": {
-    "wool-model": "^2.0.3",
-    "wool-store": "^1.2.13",
-    "wool-validate": "^2.1.1"
+    "wool-model": "^2.0.4",
+    "wool-store": "^1.2.14",
+    "wool-validate": "^2.1.2"
   }
 }
