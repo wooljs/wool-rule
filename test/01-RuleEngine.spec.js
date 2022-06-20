@@ -15,9 +15,10 @@ const test = require('tape-async')
   , RuleEngine = require(__dirname + '/../lib/RuleEngine.js')
   , { Store } = require('wool-store')
   , { Command, Event } = require('wool-model')
+  , { InvalidRuleError } = require('wool-validate')
   , chatroomRule = require(__dirname + '/test-rule-chatroom.js')
 
-test('rule-engine execute command with chatroom rules: create msg join msg msg leave leave', async function(t) {
+test('rule-engine execute command with chatroom rules: create msg join msg msg leave leave', async function (t) {
   try {
     let store = new Store()
       , rgine = new RuleEngine(store)
@@ -34,53 +35,53 @@ test('rule-engine execute command with chatroom rules: create msg join msg msg l
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 0)
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:create', {userId: 'foo'}))
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:create', { userId: 'foo' }))
     t.deepEqual(userFoo.membership.length, 1)
     chatId = userFoo.membership[0]
     t.deepEqual(userBar.membership.length, 0)
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:create {"userId":"foo","chatId":"'+chatId+'"}')
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:create {"userId":"foo","chatId":"' + chatId + '"}')
 
     let chatroom = ev = await store.get(chatId)
-    t.deepEqual(chatroom, { members: [ 'foo' ], messages: [ '* Chatroom created by foo' ] })
+    t.deepEqual(chatroom, { members: ['foo'], messages: ['* Chatroom created by foo'] })
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'test'}))
-    t.deepEqual(chatroom, { members: [ 'foo' ], messages: [ '* Chatroom created by foo', 'foo: test' ] })
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:send {"chatId":"'+chatId+'","userId":"foo","msg":"test"}')
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'test' }))
+    t.deepEqual(chatroom, { members: ['foo'], messages: ['* Chatroom created by foo', 'foo: test'] })
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:send {"chatId":"' + chatId + '","userId":"foo","msg":"test"}')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:join', {chatId, userId: 'bar'}))
-    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar' ] })
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:join', { chatId, userId: 'bar' }))
+    t.deepEqual(chatroom, { members: ['foo', 'bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar'] })
     t.deepEqual(userBar.membership.length, 1)
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:join {"chatId":"'+chatId+'","userId":"bar"}')
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:join {"chatId":"' + chatId + '","userId":"bar"}')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'bar', msg: 'yo'}))
-    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo' ] })
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:send {"chatId":"'+chatId+'","userId":"bar","msg":"yo"}')
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'bar', msg: 'yo' }))
+    t.deepEqual(chatroom, { members: ['foo', 'bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo'] })
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:send {"chatId":"' + chatId + '","userId":"bar","msg":"yo"}')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'bye'}))
-    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye' ] })
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:send {"chatId":"'+chatId+'","userId":"foo","msg":"bye"}')
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'bye' }))
+    t.deepEqual(chatroom, { members: ['foo', 'bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye'] })
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:send {"chatId":"' + chatId + '","userId":"foo","msg":"bye"}')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'foo'}))
-    t.deepEqual(chatroom, { members: [ 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo' ] })
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'foo' }))
+    t.deepEqual(chatroom, { members: ['bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo'] })
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 1)
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:leave {"chatId":"'+chatId+'","userId":"foo"}')
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:leave {"chatId":"' + chatId + '","userId":"foo"}')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'bar'}))
-    t.deepEqual(chatroom, { members: [ ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo', '* Chatroom left by bar' ] })
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'bar' }))
+    t.deepEqual(chatroom, { members: [], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo', '* Chatroom left by bar'] })
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 0)
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:leave {"chatId":"'+chatId+'","userId":"bar"}')
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:leave {"chatId":"' + chatId + '","userId":"bar"}')
 
-  } catch(e) {
-    t.fail(e.message +'\n'+ e.stack)
+  } catch (e) {
+    t.fail(e.message + '\n' + e.stack)
   } finally {
     t.plan(23)
     t.end()
   }
 })
 
-test('rule-engine execute command with chatroom rules: create msg join I:join msg E:err msg leave leave I:msg I:leave', async function(t) {
+test('rule-engine execute command with chatroom rules: create msg join I:join msg E:err msg leave leave I:msg I:leave', async function (t) {
   try {
     let store = new Store()
       , rgine = new RuleEngine(store)
@@ -97,67 +98,67 @@ test('rule-engine execute command with chatroom rules: create msg join I:join ms
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 0)
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:create', {userId: 'foo'}))
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:create', { userId: 'foo' }))
     t.deepEqual(userFoo.membership.length, 1)
     chatId = userFoo.membership[0]
     t.deepEqual(userBar.membership.length, 0)
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:create {"userId":"foo","chatId":"'+chatId+'"}')
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:create {"userId":"foo","chatId":"' + chatId + '"}')
 
     let chatroom = ev = await store.get(chatId)
-    t.deepEqual(chatroom, { members: [ 'foo' ], messages: [ '* Chatroom created by foo' ] })
+    t.deepEqual(chatroom, { members: ['foo'], messages: ['* Chatroom created by foo'] })
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'test'}))
-    t.deepEqual(chatroom, { members: [ 'foo' ], messages: [ '* Chatroom created by foo', 'foo: test' ] })
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:send {"chatId":"'+chatId+'","userId":"foo","msg":"test"}')
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'test' }))
+    t.deepEqual(chatroom, { members: ['foo'], messages: ['* Chatroom created by foo', 'foo: test'] })
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:send {"chatId":"' + chatId + '","userId":"foo","msg":"test"}')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:join', {chatId, userId: 'bar'}))
-    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar' ] })
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:join', { chatId, userId: 'bar' }))
+    t.deepEqual(chatroom, { members: ['foo', 'bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar'] })
     t.deepEqual(userBar.membership.length, 1)
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:join {"chatId":"'+chatId+'","userId":"bar"}')
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:join {"chatId":"' + chatId + '","userId":"bar"}')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:join', {chatId, userId: 'bar'}))
-    t.deepEqual(ev.stringify(), 'I: '+d.toISOString()+'-0000 chatroom:join {"chatId":"'+chatId+'","userId":"bar"} Chatroom%3E%20member%20%22bar%22%20cannot%20join%3A%20already%20in')
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:join', { chatId, userId: 'bar' }))
+    t.deepEqual(ev.stringify(), 'I: ' + d.toISOString() + '-0000 chatroom:join {"chatId":"' + chatId + '","userId":"bar"} Chatroom%3E%20member%20%22bar%22%20cannot%20join%3A%20already%20in')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'bar', msg: 'yo'}))
-    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo' ] })
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:send {"chatId":"'+chatId+'","userId":"bar","msg":"yo"}')
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'bar', msg: 'yo' }))
+    t.deepEqual(chatroom, { members: ['foo', 'bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo'] })
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:send {"chatId":"' + chatId + '","userId":"bar","msg":"yo"}')
 
     ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:err', {}))
     let str = ev.stringify()
     //console.log(str)
-    t.ok(str.match('^E: '+d.toISOString()+'-0000 chatroom:err {} ERROR!%0AError%3A%20ERROR!%0A%20%20%20%20at%20Rule.run%20\\(.*%2Fwool-rule%2Ftest%2Ftest-rule-chatroom.js%3A..%3A11\\)%0A%20%20%20%20at%20Rule.apply%20\\(.*%2Fwool-rule%2Flib%2FRule.js%3A\\d+%3A\\d+\\)%0A%20%20%20%20at%20RuleEngine.execute%20\\(.*%2Fwool-rule%2Flib%2FRuleEngine.js%3A\\d+%3A\\d+\\).*$'), 'evaluate by regex fail')
+    t.ok(str.match('^E: ' + d.toISOString() + '-0000 chatroom:err {} ERROR!%0AError%3A%20ERROR!%0A%20%20%20%20at%20Rule.run%20\\(.*%2Fwool-rule%2Ftest%2Ftest-rule-chatroom.js%3A..%3A11\\)%0A%20%20%20%20at%20Rule.apply%20\\(.*%2Fwool-rule%2Flib%2FRule.js%3A\\d+%3A\\d+\\)%0A%20%20%20%20at%20RuleEngine.execute%20\\(.*%2Fwool-rule%2Flib%2FRuleEngine.js%3A\\d+%3A\\d+\\).*$'), 'evaluate by regex fail')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'bye'}))
-    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye' ] })
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:send {"chatId":"'+chatId+'","userId":"foo","msg":"bye"}')
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'bye' }))
+    t.deepEqual(chatroom, { members: ['foo', 'bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye'] })
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:send {"chatId":"' + chatId + '","userId":"foo","msg":"bye"}')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'foo'}))
-    t.deepEqual(chatroom, { members: [ 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo' ] })
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'foo' }))
+    t.deepEqual(chatroom, { members: ['bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo'] })
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 1)
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:leave {"chatId":"'+chatId+'","userId":"foo"}')
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:leave {"chatId":"' + chatId + '","userId":"foo"}')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'bar'}))
-    t.deepEqual(chatroom, { members: [ ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo', '* Chatroom left by bar' ] })
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'bar' }))
+    t.deepEqual(chatroom, { members: [], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo', '* Chatroom left by bar'] })
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 0)
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:leave {"chatId":"'+chatId+'","userId":"bar"}')
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:leave {"chatId":"' + chatId + '","userId":"bar"}')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'bar', msg: 'yo'}))
-    t.deepEqual(ev.stringify(), 'I: '+d.toISOString()+'-0000 chatroom:send {"chatId":"'+chatId+'","userId":"bar","msg":"yo"} Chatroom%3E%20member%20%22bar%22%20cannot%20send%20message%3A%20not%20in')
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'bar', msg: 'yo' }))
+    t.deepEqual(ev.stringify(), 'I: ' + d.toISOString() + '-0000 chatroom:send {"chatId":"' + chatId + '","userId":"bar","msg":"yo"} Chatroom%3E%20member%20%22bar%22%20cannot%20send%20message%3A%20not%20in')
 
-    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'foo'}))
-    t.deepEqual(ev.stringify(), 'I: '+d.toISOString()+'-0000 chatroom:leave {"chatId":"'+chatId+'","userId":"foo"} Chatroom%3E%20member%20%22foo%22%20cannot%20leave%3A%20not%20in')
+    ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'foo' }))
+    t.deepEqual(ev.stringify(), 'I: ' + d.toISOString() + '-0000 chatroom:leave {"chatId":"' + chatId + '","userId":"foo"} Chatroom%3E%20member%20%22foo%22%20cannot%20leave%3A%20not%20in')
 
-  } catch(e) {
-    t.fail(e.message +'\n'+ e.stack)
+  } catch (e) {
+    t.fail(e.message + '\n' + e.stack)
   } finally {
     t.plan(27)
     t.end()
   }
 })
 
-test('rule-engine replay event with chatroom rules: create msg join I:join msg msg E:err leave leave I:msg I:leave', async function(t) {
+test('rule-engine replay event with chatroom rules: create msg join I:join msg msg E:err leave leave I:msg I:leave', async function (t) {
   try {
     let store = new Store()
       , rgine = new RuleEngine(store)
@@ -174,67 +175,126 @@ test('rule-engine replay event with chatroom rules: create msg join I:join msg m
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 0)
 
-    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:create', {chatId, userId: 'foo'}, 'S'))
+    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:create', { chatId, userId: 'foo' }, 'S'))
     t.deepEqual(userFoo.membership.length, 1)
     t.deepEqual(userFoo.membership[0], chatId)
     t.deepEqual(userBar.membership.length, 0)
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:create {"chatId":"'+chatId+'","userId":"foo"}')
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:create {"chatId":"' + chatId + '","userId":"foo"}')
 
     let chatroom = ev = await store.get(chatId)
-    t.deepEqual(chatroom, { members: [ 'foo' ], messages: [ '* Chatroom created by foo' ] })
+    t.deepEqual(chatroom, { members: ['foo'], messages: ['* Chatroom created by foo'] })
 
-    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'test'}, 'S'))
-    t.deepEqual(chatroom, { members: [ 'foo' ], messages: [ '* Chatroom created by foo', 'foo: test' ] })
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:send {"chatId":"'+chatId+'","userId":"foo","msg":"test"}')
+    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'test' }, 'S'))
+    t.deepEqual(chatroom, { members: ['foo'], messages: ['* Chatroom created by foo', 'foo: test'] })
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:send {"chatId":"' + chatId + '","userId":"foo","msg":"test"}')
 
-    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:join', {chatId, userId: 'bar'}, 'S'))
-    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar' ] })
+    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:join', { chatId, userId: 'bar' }, 'S'))
+    t.deepEqual(chatroom, { members: ['foo', 'bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar'] })
     t.deepEqual(userBar.membership.length, 1)
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:join {"chatId":"'+chatId+'","userId":"bar"}')
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:join {"chatId":"' + chatId + '","userId":"bar"}')
 
-    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:join', {chatId, userId: 'bar'}, 'I', 'Chatroom> member "bar" cannot join: already in'))
-    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar' ] })
+    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:join', { chatId, userId: 'bar' }, 'I', 'Chatroom> member "bar" cannot join: already in'))
+    t.deepEqual(chatroom, { members: ['foo', 'bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar'] })
     t.deepEqual(userBar.membership.length, 1)
-    t.deepEqual(ev.stringify(), 'I: '+d.toISOString()+'-0000 chatroom:join {"chatId":"'+chatId+'","userId":"bar"} Chatroom%3E%20member%20%22bar%22%20cannot%20join%3A%20already%20in')
+    t.deepEqual(ev.stringify(), 'I: ' + d.toISOString() + '-0000 chatroom:join {"chatId":"' + chatId + '","userId":"bar"} Chatroom%3E%20member%20%22bar%22%20cannot%20join%3A%20already%20in')
 
-    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'bar', msg: 'yo'}, 'S'))
-    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo' ] })
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:send {"chatId":"'+chatId+'","userId":"bar","msg":"yo"}')
+    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'bar', msg: 'yo' }, 'S'))
+    t.deepEqual(chatroom, { members: ['foo', 'bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo'] })
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:send {"chatId":"' + chatId + '","userId":"bar","msg":"yo"}')
 
-    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'bye'}, 'S'))
-    t.deepEqual(chatroom, { members: [ 'foo', 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye' ] })
+    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'bye' }, 'S'))
+    t.deepEqual(chatroom, { members: ['foo', 'bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye'] })
 
     ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:err', {}, 'E', 'ERROR!\nError: ERROR!\n    at Rule.run (/home/n3/sources/repo/wool-rule/test/test-rule-chatroom.js:104:11)\n    at Rule.apply (/home/n3/sources/repo/wool-rule/lib/Rule.js:57:16)\n    at RuleEngine.execute (/home/n3/sources/repo/wool-rule/lib/RuleEngine.js:35:20)\n    at <anonymous>\n    at process._tickCallback (internal/process/next_tick.js:188:7)'))
-    t.deepEqual(ev.stringify(), 'E: '+d.toISOString()+'-0000 chatroom:err {} ERROR!%0AError%3A%20ERROR!%0A%20%20%20%20at%20Rule.run%20(%2Fhome%2Fn3%2Fsources%2Frepo%2Fwool-rule%2Ftest%2Ftest-rule-chatroom.js%3A104%3A11)%0A%20%20%20%20at%20Rule.apply%20(%2Fhome%2Fn3%2Fsources%2Frepo%2Fwool-rule%2Flib%2FRule.js%3A57%3A16)%0A%20%20%20%20at%20RuleEngine.execute%20(%2Fhome%2Fn3%2Fsources%2Frepo%2Fwool-rule%2Flib%2FRuleEngine.js%3A35%3A20)%0A%20%20%20%20at%20%3Canonymous%3E%0A%20%20%20%20at%20process._tickCallback%20(internal%2Fprocess%2Fnext_tick.js%3A188%3A7)')
+    t.deepEqual(ev.stringify(), 'E: ' + d.toISOString() + '-0000 chatroom:err {} ERROR!%0AError%3A%20ERROR!%0A%20%20%20%20at%20Rule.run%20(%2Fhome%2Fn3%2Fsources%2Frepo%2Fwool-rule%2Ftest%2Ftest-rule-chatroom.js%3A104%3A11)%0A%20%20%20%20at%20Rule.apply%20(%2Fhome%2Fn3%2Fsources%2Frepo%2Fwool-rule%2Flib%2FRule.js%3A57%3A16)%0A%20%20%20%20at%20RuleEngine.execute%20(%2Fhome%2Fn3%2Fsources%2Frepo%2Fwool-rule%2Flib%2FRuleEngine.js%3A35%3A20)%0A%20%20%20%20at%20%3Canonymous%3E%0A%20%20%20%20at%20process._tickCallback%20(internal%2Fprocess%2Fnext_tick.js%3A188%3A7)')
 
-    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'foo'}, 'S'))
-    t.deepEqual(chatroom, { members: [ 'bar' ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo' ] })
+    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'foo' }, 'S'))
+    t.deepEqual(chatroom, { members: ['bar'], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo'] })
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 1)
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:leave {"chatId":"'+chatId+'","userId":"foo"}')
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:leave {"chatId":"' + chatId + '","userId":"foo"}')
 
-    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'bar'}, 'S'))
-    t.deepEqual(chatroom, { members: [ ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo', '* Chatroom left by bar' ] })
+    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'bar' }, 'S'))
+    t.deepEqual(chatroom, { members: [], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo', '* Chatroom left by bar'] })
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 0)
-    t.deepEqual(ev.stringify(), 'S: '+d.toISOString()+'-0000 chatroom:leave {"chatId":"'+chatId+'","userId":"bar"}')
+    t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:leave {"chatId":"' + chatId + '","userId":"bar"}')
 
-    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'bar', msg: 'yo'}, 'I', 'Chatroom> member "bar" cannot send message: not in'))
-    t.deepEqual(chatroom, { members: [ ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo', '* Chatroom left by bar' ] })
+    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'bar', msg: 'yo' }, 'I', 'Chatroom> member "bar" cannot send message: not in'))
+    t.deepEqual(chatroom, { members: [], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo', '* Chatroom left by bar'] })
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 0)
-    t.deepEqual(ev.stringify(), 'I: '+d.toISOString()+'-0000 chatroom:send {"chatId":"'+chatId+'","userId":"bar","msg":"yo"} Chatroom%3E%20member%20%22bar%22%20cannot%20send%20message%3A%20not%20in')
+    t.deepEqual(ev.stringify(), 'I: ' + d.toISOString() + '-0000 chatroom:send {"chatId":"' + chatId + '","userId":"bar","msg":"yo"} Chatroom%3E%20member%20%22bar%22%20cannot%20send%20message%3A%20not%20in')
 
-    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'foo'}, 'I', 'Chatroom> member "foo" cannot leave: not in'))
-    t.deepEqual(chatroom, { members: [ ], messages: [ '* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo', '* Chatroom left by bar' ] })
+    ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'foo' }, 'I', 'Chatroom> member "foo" cannot leave: not in'))
+    t.deepEqual(chatroom, { members: [], messages: ['* Chatroom created by foo', 'foo: test', '* Chatroom joined by bar', 'bar: yo', 'foo: bye', '* Chatroom left by foo', '* Chatroom left by bar'] })
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 0)
-    t.deepEqual(ev.stringify(), 'I: '+d.toISOString()+'-0000 chatroom:leave {"chatId":"'+chatId+'","userId":"foo"} Chatroom%3E%20member%20%22foo%22%20cannot%20leave%3A%20not%20in')
+    t.deepEqual(ev.stringify(), 'I: ' + d.toISOString() + '-0000 chatroom:leave {"chatId":"' + chatId + '","userId":"foo"} Chatroom%3E%20member%20%22foo%22%20cannot%20leave%3A%20not%20in')
 
-  } catch(e) {
-    t.fail(e.message +'\n'+ e.stack)
+    // replay event marked as success but fails
+    try {
+      await rgine.replay(new Event(d = new Date(), 0, 'chatroom:send', { chatId: 'NOT EXIST', userId: 'bar', msg: 'yo' }, 'S'))
+      t.fail('Previous assertion should have thrown an exception')
+    } catch (x) {
+      t.ok(x instanceof InvalidRuleError)
+      const rx = /While.*\nRoot.*undefined.*\nTypeError.*undefined.*\n.*test-rule-chatroom\.js.*/
+      t.ok(rx.test(x.message), `expect: ${rx.toString()}\n actual ${x.message}`)
+    }
+
+  } catch (e) {
+    t.fail(e.message + '\n' + e.stack)
   } finally {
-    t.plan(35)
+    t.plan(37)
     t.end()
   }
 })
+
+
+test('rule-engine execute/replay expected errors', async function (t) {
+  try {
+    let store = new Store()
+      , rgine = new RuleEngine(store)
+    rgine.addRules(chatroomRule)
+
+    try {
+      await rgine.execute('not a command')
+      t.fail('Previous assertion should have thrown an exception')
+    } catch (x) {
+      const rx = /Should be of type Command: "not a command"/
+      t.ok(rx.test(x.message), `expect: ${rx.toString()}\n actual ${x.message}`)
+    }
+
+
+    try {
+      await rgine.execute(new Command(new Date(), 0, 'not a rule', { param: 666 }))
+      t.fail('Previous assertion should have thrown an exception')
+    } catch (x) {
+      const rx = /No rule found for: not a rule/
+      t.ok(rx.test(x.message), `expect: ${rx.toString()}\n actual ${x.message}`)
+    }
+
+    try {
+      await rgine.replay('not an event')
+      t.fail('Previous assertion should have thrown an exception')
+    } catch (x) {
+      const rx = /Should be of type Event: "not an event"/
+      t.ok(rx.test(x.message), `expect: ${rx.toString()}\n actual ${x.message}`)
+    }
+
+    try {
+      await rgine.replay(new Event(new Date(), 0, 'not a rule', { param: 666 }, 'S'))
+      t.fail('Previous assertion should have thrown an exception')
+    } catch (x) {
+      const rx = /No rule found for: not a rule/
+      t.ok(rx.test(x.message), `expect: ${rx.toString()}\n actual ${x.message}`)
+    }
+
+  } catch (e) {
+    t.fail(e.message + '\n' + e.stack)
+  } finally {
+    t.plan(4)
+    t.end()
+  }
+})
+
