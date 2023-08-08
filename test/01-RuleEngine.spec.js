@@ -11,7 +11,7 @@
 
 'use strict'
 
-const test = require('tape-async')
+const test = require('tape')
   , RuleEngine = require(__dirname + '/../lib/RuleEngine.js')
   , { Store } = require('wool-store')
   , { Command, Event } = require('wool-model')
