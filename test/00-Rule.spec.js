@@ -75,7 +75,8 @@ test('create bad rule', function (t) {
     name: 'rule',
     param: {},
     cond() { },
-    run() { }
+    run() { },
+    replay() { }
   }), /^Error: field "param" must be an array.*/, '')
   t.throws(() => Rule.build({
     namespace: 'test',
@@ -91,11 +92,19 @@ test('create bad rule', function (t) {
     cond() { },
     run: 'plop'
   }), /^Error: field "run" must be a function.*/, '')
+  t.throws(() => Rule.build({
+    namespace: 'test',
+    name: 'rule',
+    param: [],
+    cond() { },
+    run() { },
+    replay: 'plop'
+  }), /^Error: field "replay" must be a function.*/, '')
 
   t.throws(() => Rule.buildSet(/muhahaha/, []),
     /^Error: constructor parameter "namespace" must be a string./, '')
 
-  t.plan(9)
+  t.plan(10)
   t.end()
 })
 

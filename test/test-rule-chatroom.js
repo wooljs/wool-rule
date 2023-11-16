@@ -80,6 +80,9 @@ module.exports = Rule.buildSet('chatroom', {
       , chatroom = await store.get(chatId)
     chatroom.messages.push(userId + ': ' + msg)
     await store.set(chatId, chatroom)
+  },
+  async replay(store, param) {
+    await this.run(store, param)
   }
 },{
   name: 'err',
