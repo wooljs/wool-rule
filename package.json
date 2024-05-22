@@ -29,13 +29,13 @@
   "devDependencies": {
     "@freecube/tap-summary": "^4.0.4",
     "c8": "^8.0.1",
-    "eslint": "^8.53.0",
-    "nodemon": "^3.0.1",
-    "tape": "^5.7.2"
+    "eslint": "^8.57.0",
+    "nodemon": "^3.1.0",
+    "tape": "^5.7.5"
   },
   "dependencies": {
     "wool-model": "^2.2.2",
     "wool-store": "^2.3.0",
-    "wool-validate": "^2.4.0"
+    "wool-validate": "^2.4.1"
   }
 }
