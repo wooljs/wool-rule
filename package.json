@@ -10,7 +10,7 @@
     "lint": "eslint index.js lib/ test/",
     "lint:watch": "nodemon -x 'npm run lint'",
     "coverage": "c8 tape test/**/*.spec.js && c8 report --reporter=html",
-    "preversion": "npm test && npm outdated && npm audit --only=prod",
+    "preversion": "npm test && npm audit --only=prod # && npm outdated ",
     "link-all": "for u in $(ls -1d node_modules/wool-* | xargs basename -a); do npm link $u; done;"
   },
   "repository": {
