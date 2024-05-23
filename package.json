@@ -36,6 +36,6 @@
   "dependencies": {
     "wool-model": "^2.2.2",
     "wool-store": "^2.3.0",
-    "wool-validate": "^2.4.2"
+    "wool-validate": "^2.4.3"
   }
 }
