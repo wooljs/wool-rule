@@ -9,29 +9,27 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-'use strict'
-
-const test = require('tape')
-  , RuleEngine = require(__dirname + '/../lib/RuleEngine.js')
-  , { Store } = require('wool-store')
-  , { Command, Event } = require('wool-model')
-  , { InvalidRuleError } = require('wool-validate')
-  , chatroomRule = require(__dirname + '/test-rule-chatroom.js')
+import test from 'tape'
+import { RuleEngine } from '../index.js'
+import { Store } from 'wool-store'
+import { Command, Event } from 'wool-model'
+import { InvalidRuleError } from 'wool-validate'
+import chatroomRule from './test-rule-chatroom.js'
 
 test('rule-engine execute command with chatroom rules: create msg join msg msg leave leave', async function (t) {
   try {
-    let store = new Store()
-      , rgine = new RuleEngine(store)
-      , ev = null
-      , d = null
-      , chatId = null
+    const store = new Store()
+    const rgine = new RuleEngine(store)
+    let ev = null
+    let d = null
+    let chatId = null
     rgine.addRules(chatroomRule)
 
     await store.set('foo', { membership: [] })
     await store.set('bar', { membership: [] })
 
-    let userFoo = await store.get('foo')
-      , userBar = await store.get('bar')
+    const userFoo = await store.get('foo')
+    const userBar = await store.get('bar')
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 0)
 
@@ -41,7 +39,7 @@ test('rule-engine execute command with chatroom rules: create msg join msg msg l
     t.deepEqual(userBar.membership.length, 0)
     t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:create {"userId":"foo","chatId":"' + chatId + '"}')
 
-    let chatroom = ev = await store.get(chatId)
+    const chatroom = ev = await store.get(chatId)
     t.deepEqual(chatroom, { members: ['foo'], messages: ['* Chatroom created by foo'] })
 
     ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'test' }))
@@ -72,7 +70,6 @@ test('rule-engine execute command with chatroom rules: create msg join msg msg l
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 0)
     t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:leave {"chatId":"' + chatId + '","userId":"bar"}')
-
   } catch (e) {
     t.fail(e.message + '\n' + e.stack)
   } finally {
@@ -83,18 +80,18 @@ test('rule-engine execute command with chatroom rules: create msg join msg msg l
 
 test('rule-engine execute command with chatroom rules: create msg join I:join msg E:err msg leave leave I:msg I:leave', async function (t) {
   try {
-    let store = new Store()
-      , rgine = new RuleEngine(store)
-      , ev = null
-      , d = null
-      , chatId = null
+    const store = new Store()
+    const rgine = new RuleEngine(store)
+    let ev = null
+    let d = null
+    let chatId = null
     rgine.addRules(chatroomRule)
 
     store.set('foo', { membership: [] })
     store.set('bar', { membership: [] })
 
-    let userFoo = await store.get('foo')
-      , userBar = await store.get('bar')
+    const userFoo = await store.get('foo')
+    const userBar = await store.get('bar')
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 0)
 
@@ -104,7 +101,7 @@ test('rule-engine execute command with chatroom rules: create msg join I:join ms
     t.deepEqual(userBar.membership.length, 0)
     t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:create {"userId":"foo","chatId":"' + chatId + '"}')
 
-    let chatroom = ev = await store.get(chatId)
+    const chatroom = ev = await store.get(chatId)
     t.deepEqual(chatroom, { members: ['foo'], messages: ['* Chatroom created by foo'] })
 
     ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'test' }))
@@ -124,8 +121,8 @@ test('rule-engine execute command with chatroom rules: create msg join I:join ms
     t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:send {"chatId":"' + chatId + '","userId":"bar","msg":"yo"}')
 
     ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:err', {}))
-    let str = ev.stringify()
-    //console.log(str)
+    const str = ev.stringify()
+    // console.log(str)
     t.ok(str.match('^E: ' + d.toISOString() + '-0000 chatroom:err {} ERROR!%0AError%3A%20ERROR!%0A%20%20%20%20at%20Rule.run%20\\(.*%2Fwool-rule%2Ftest%2Ftest-rule-chatroom.js%3A..%3A11\\)%0A%20%20%20%20at%20Rule.apply%20\\(.*%2Fwool-rule%2Flib%2FRule.js%3A\\d+%3A\\d+\\)%0A%20%20%20%20at%20RuleEngine.execute%20\\(.*%2Fwool-rule%2Flib%2FRuleEngine.js%3A\\d+%3A\\d+\\).*$'), 'evaluate by regex fail')
 
     ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'bye' }))
@@ -149,7 +146,6 @@ test('rule-engine execute command with chatroom rules: create msg join I:join ms
 
     ev = await rgine.execute(new Command(d = new Date(), 0, 'chatroom:leave', { chatId, userId: 'foo' }))
     t.deepEqual(ev.stringify(), 'I: ' + d.toISOString() + '-0000 chatroom:leave {"chatId":"' + chatId + '","userId":"foo"} Chatroom%3E%20member%20%22foo%22%20cannot%20leave%3A%20not%20in')
-
   } catch (e) {
     t.fail(e.message + '\n' + e.stack)
   } finally {
@@ -160,18 +156,18 @@ test('rule-engine execute command with chatroom rules: create msg join I:join ms
 
 test('rule-engine replay event with chatroom rules: create msg join I:join msg msg E:err leave leave I:msg I:leave', async function (t) {
   try {
-    let store = new Store()
-      , rgine = new RuleEngine(store)
-      , ev = null
-      , d = null
-      , chatId = '42'
+    const store = new Store()
+    const rgine = new RuleEngine(store)
+    let ev = null
+    let d = null
+    const chatId = '42'
     rgine.addRules(chatroomRule)
 
     store.set('foo', { membership: [] })
     store.set('bar', { membership: [] })
 
-    let userFoo = await store.get('foo')
-      , userBar = await store.get('bar')
+    const userFoo = await store.get('foo')
+    const userBar = await store.get('bar')
     t.deepEqual(userFoo.membership.length, 0)
     t.deepEqual(userBar.membership.length, 0)
 
@@ -181,7 +177,7 @@ test('rule-engine replay event with chatroom rules: create msg join I:join msg m
     t.deepEqual(userBar.membership.length, 0)
     t.deepEqual(ev.stringify(), 'S: ' + d.toISOString() + '-0000 chatroom:create {"chatId":"' + chatId + '","userId":"foo"}')
 
-    let chatroom = ev = await store.get(chatId)
+    const chatroom = ev = await store.get(chatId)
     t.deepEqual(chatroom, { members: ['foo'], messages: ['* Chatroom created by foo'] })
 
     ev = await rgine.replay(new Event(d = new Date(), 0, 'chatroom:send', { chatId, userId: 'foo', msg: 'test' }, 'S'))
@@ -241,7 +237,6 @@ test('rule-engine replay event with chatroom rules: create msg join I:join msg m
       const rx = /While.*\nRoot.*undefined.*\nTypeError.*undefined.*\n.*test-rule-chatroom\.js.*/
       t.ok(rx.test(x.message), `expect: ${rx.toString()}\n actual ${x.message}`)
     }
-
   } catch (e) {
     t.fail(e.message + '\n' + e.stack)
   } finally {
@@ -250,11 +245,10 @@ test('rule-engine replay event with chatroom rules: create msg join I:join msg m
   }
 })
 
-
 test('rule-engine execute/replay expected errors', async function (t) {
   try {
-    let store = new Store()
-      , rgine = new RuleEngine(store)
+    const store = new Store()
+    const rgine = new RuleEngine(store)
     rgine.addRules(chatroomRule)
 
     try {
@@ -264,7 +258,6 @@ test('rule-engine execute/replay expected errors', async function (t) {
       const rx = /Should be of type Command: "not a command"/
       t.ok(rx.test(x.message), `expect: ${rx.toString()}\n actual ${x.message}`)
     }
-
 
     try {
       await rgine.execute(new Command(new Date(), 0, 'not a rule', { param: 666 }))
@@ -289,7 +282,6 @@ test('rule-engine execute/replay expected errors', async function (t) {
       const rx = /No rule found for: not a rule/
       t.ok(rx.test(x.message), `expect: ${rx.toString()}\n actual ${x.message}`)
     }
-
   } catch (e) {
     t.fail(e.message + '\n' + e.stack)
   } finally {
@@ -297,4 +289,3 @@ test('rule-engine execute/replay expected errors', async function (t) {
     t.end()
   }
 })
-

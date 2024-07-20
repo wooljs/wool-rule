@@ -9,44 +9,42 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-'use strict'
-
-var test = require('tape')
-  , Rule = require(__dirname + '/../lib/Rule.js')
-  , { ParamCheck } = require('wool-validate')
+import test from 'tape'
+import { Rule } from '../index.js'
+import { ParamCheck } from 'wool-validate'
 
 test('create one rule', async function (t) {
-  let s = {}
-    , n = Date.now()
-    , p = {}
-    , rule = Rule.build({
-      namespace: 'test',
-      name: 'rule',
-      param: [],
-      cond(store, tmstp, param) {
-        return new Promise(resolve => {
-          setTimeout(() => {
-            t.deepEqual(s, store)
-            t.deepEqual(n, tmstp)
-            t.deepEqual(p, param)
-            resolve(undefined)
-          }, 100)
-        })
-      },
-      run() { }
-    })
-  t.ok('undefined' === typeof await rule.validate(s, n, p))
+  const s = {}
+  const n = Date.now()
+  const p = {}
+  const rule = Rule.build({
+    namespace: 'test',
+    name: 'rule',
+    param: [],
+    cond (store, tmstp, param) {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          t.deepEqual(s, store)
+          t.deepEqual(n, tmstp)
+          t.deepEqual(p, param)
+          resolve(undefined)
+        }, 100)
+      })
+    },
+    run () { }
+  })
+  t.ok(typeof await rule.validate(s, n, p) === 'undefined')
   t.deepEqual(rule.toDTO(), { n: 'test:rule', p: {} })
   t.plan(5)
   t.end()
 })
 
 test('create one ruleSet', function (t) {
-  let fun_test = function () { }
-    , rules = Rule.buildSet('test', { name: 'rule01', run() { } }, { name: 'rule02', run: fun_test }, { name: 'rule03', run() { } })
+  const funTest = function () { }
+  const rules = Rule.buildSet('test', { name: 'rule01', run () { } }, { name: 'rule02', run: funTest }, { name: 'rule03', run () { } })
 
   t.ok(rules.length === 3)
-  t.ok(rules[1].run === fun_test)
+  t.ok(rules[1].run === funTest)
 
   t.plan(2)
   t.end()
@@ -60,44 +58,44 @@ test('create bad rule', function (t) {
     namespace: null,
     name: undefined,
     param: [],
-    cond() { },
-    run() { }
+    cond () { },
+    run () { }
   }), /^Error: field "namespace" must be a string.*/)
   t.throws(() => Rule.build({
     namespace: 'test',
     name: undefined,
     param: [],
-    cond() { },
-    run() { }
+    cond () { },
+    run () { }
   }), /^Error: field "name" must be a string.*/)
   t.throws(() => Rule.build({
     namespace: 'test',
     name: 'rule',
     param: {},
-    cond() { },
-    run() { },
-    replay() { }
+    cond () { },
+    run () { },
+    replay () { }
   }), /^Error: field "param" must be an array.*/, '')
   t.throws(() => Rule.build({
     namespace: 'test',
     name: 'rule',
     param: [],
     cond: null,
-    run() { }
+    run () { }
   }), /^Error: field "cond" must be a function.*/, '')
   t.throws(() => Rule.build({
     namespace: 'test',
     name: 'rule',
     param: [],
-    cond() { },
+    cond () { },
     run: 'plop'
   }), /^Error: field "run" must be a function.*/, '')
   t.throws(() => Rule.build({
     namespace: 'test',
     name: 'rule',
     param: [],
-    cond() { },
-    run() { },
+    cond () { },
+    run () { },
     replay: 'plop'
   }), /^Error: field "replay" must be a function.*/, '')
 
@@ -109,11 +107,11 @@ test('create bad rule', function (t) {
 })
 
 test('filter params', function (t) {
-  let rule = Rule.build({
+  const rule = Rule.build({
     namespace: 'test',
     name: 'rule',
     param: [new ParamCheck('foo'), new ParamCheck('fizbuz'), new ParamCheck('bar').drop()],
-    run() { }
+    run () { }
   })
 
   t.deepEqual(rule.filterParam({}), {})

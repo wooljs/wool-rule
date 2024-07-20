@@ -9,7 +9,10 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-module.exports = {
-  Rule: require('./lib/Rule'),
-  RuleEngine: require('./lib/RuleEngine')
+import Rule from './lib/Rule.js'
+import RuleEngine from './lib/RuleEngine.js'
+
+export {
+  Rule,
+  RuleEngine
 }

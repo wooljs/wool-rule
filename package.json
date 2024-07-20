@@ -3,15 +3,15 @@
   "version": "2.4.5",
   "description": "Lib for Rules in Wool",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "pretest": "npm run lint",
     "test": "tape test/**/*.spec.js |tap-summary",
     "test:watch": "nodemon -x 'clear; npm test'",
-    "lint": "eslint index.js lib/ test/",
+    "lint": "standard --fix *.js lib/ test/",
     "lint:watch": "nodemon -x 'npm run lint'",
     "coverage": "c8 tape test/**/*.spec.js && c8 report --reporter=html",
-    "preversion": "npm test && npm audit --only=prod # && npm outdated ",
-    "link-all": "for u in $(ls -1d node_modules/wool-* | xargs basename -a); do npm link $u; done;"
+    "preversion": "npm test && npm outdated && npm audit"
   },
   "repository": {
     "type": "git",
@@ -28,14 +28,14 @@
   "homepage": "https://github.com/nicocube/wool-rule#readme",
   "devDependencies": {
     "@freecube/tap-summary": "^4.0.4",
-    "c8": "^8.0.1",
-    "eslint": "^8.57.0",
-    "nodemon": "^3.1.0",
-    "tape": "^5.7.5"
+    "c8": "^10.1.2",
+    "nodemon": "^3.1.4",
+    "standard": "^17.1.0",
+    "tape": "^5.8.1"
   },
   "dependencies": {
-    "wool-model": "^2.2.2",
-    "wool-store": "^2.3.0",
-    "wool-validate": "^2.4.4"
+    "wool-model": "^2.3.0",
+    "wool-store": "^2.4.0",
+    "wool-validate": "^2.5.0"
   }
 }
